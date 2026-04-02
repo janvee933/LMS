@@ -18,8 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow any origin for development, or requests with no origin (like mobile apps)
-    if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:5173',
+      'http://127.0.0.1:5173'
+    ].filter(Boolean);
+    
+    // Allow any origin if NODE_ENV is development or if it's in the allowed list
+    if (!origin || process.env.NODE_ENV === 'development' || allowedOrigins.some(ao => origin.startsWith(ao))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -66,7 +72,7 @@ app.get('/', (req, res) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
