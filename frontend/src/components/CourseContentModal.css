@@ -1,0 +1,358 @@
+.content-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 40px;
+}
+
+.content-modal-container {
+  background: #0d0f17;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(99, 102, 241, 0.1);
+}
+
+.content-modal-header {
+  padding: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #11141d;
+}
+
+.course-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #6366f1;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.content-modal-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: white;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-x:hover {
+  transform: rotate(90deg);
+  color: white;
+}
+
+.content-modal-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar: Lessons */
+.lessons-sidebar {
+  width: 320px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  background: #0f121b;
+}
+
+.sidebar-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-header h3 {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.add-small-btn {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.lesson-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lesson-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.lesson-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lesson-item.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.lesson-rank {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  width: 24px;
+}
+
+.lesson-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.l-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+}
+
+.l-meta {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.lesson-item:hover .lesson-actions {
+  opacity: 1;
+}
+
+.lesson-actions button {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Quiz Main View */
+.quiz-main-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #08090d;
+  overflow-y: auto;
+}
+
+.quiz-header {
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lesson-label {
+  font-size: 0.75rem;
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.quiz-header h4 {
+  font-size: 1.25rem;
+  margin: 5px 0 0;
+  color: white;
+}
+
+.quiz-questions-list {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.select-lesson-prompt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  text-align: center;
+  gap: 15px;
+}
+
+.mini-form {
+  margin: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mini-form input {
+  background: #11141d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+}
+
+.quiz-form {
+  padding: 25px;
+  margin: 0 30px 20px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group-full label, .opt-input label {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.form-group-full input, .form-group-full select, .opt-input input {
+  width: 100%;
+  background: #11141d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.quiz-q-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.q-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.q-number {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.q-card-header p {
+  flex: 1;
+  font-weight: 600;
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.del-q {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.del-q:hover {
+  color: #ef4444;
+}
+
+.q-options-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.q-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  border: 1px solid transparent;
+}
+
+.q-opt.correct {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.opt-letter {
+  font-size: 0.7rem;
+  font-weight: 900;
+  opacity: 0.5;
+}
+
+.empty-quiz, .empty-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #475569;
+  text-align: center;
+}

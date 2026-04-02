@@ -1,0 +1,153 @@
+.auth-container {
+  width: 100%;
+  max-width: 450px;
+  margin: 60px auto;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.auth-header {
+  text-align: center;
+}
+
+.auth-title {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.auth-error {
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.role-selector {
+  display: flex;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+
+.role-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-bounce);
+}
+
+.role-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-dim);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 15px;
+  transition: var(--transition-fast);
+}
+
+.input-group input:focus {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -8px;
+}
+
+.forgot-password a {
+  font-size: 14px;
+  color: var(--primary-light);
+  font-weight: 500;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.spinner {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.auth-footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.toggle-auth {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.toggle-auth:hover {
+  text-decoration: underline;
+}

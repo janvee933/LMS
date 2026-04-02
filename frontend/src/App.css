@@ -1,0 +1,62 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 80px; /* Navbar height */
+}
+
+/* Page Content Utilities */
+.page-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+/* Hero Section Styles */
+.hero {
+  height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 1.1;
+  max-width: 800px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.hero-btns {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-secondary {
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  background: var(--bg-card);
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--border-glass);
+  transform: translateY(-2px);
+}

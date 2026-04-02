@@ -1,0 +1,159 @@
+const Course = require('../models/course');
+const pool = require('../config/db');
+
+const createCourse = async (req, res) => {
+  try {
+    const { title, description, price, level, category, thumbnail: thumbnailBody, video_url } = req.body;
+    const instructor_id = req.user.id;
+    const thumbnail = req.file ? `/uploads/${req.file.filename}` : thumbnailBody;
+
+    const courseId = await Course.create({
+      title,
+      description,
+      instructor_id,
+      price,
+      level,
+      category,
+      thumbnail,
+      video_url,
+    });
+
+    const course = await Course.getById(courseId);
+
+    res.status(201).json({ success: true, data: course });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getCourses = async (req, res) => {
+  try {
+    const courses = await Course.getAll();
+    console.log('--- DEBUG: getCourses ---');
+    console.log('Sending Courses Count:', courses.length);
+    res.status(200).json({ success: true, count: courses.length, data: courses });
+  } catch (error) {
+    console.error('getCourses Error:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getCourse = async (req, res) => {
+  try {
+    const course = await Course.getById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    res.status(200).json({ success: true, data: course });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const updateCourse = async (req, res) => {
+  try {
+    const { title, description, price, level, category, thumbnail: thumbnailBody, video_url } = req.body;
+    const thumbnail = req.file ? `/uploads/${req.file.filename}` : thumbnailBody;
+
+    const courseExist = await Course.getById(req.params.id);
+    if (!courseExist) {
+        return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Check ownership
+    if (Number(courseExist.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Not authorized to update this course' });
+    }
+
+    const updated = await Course.update(req.params.id, {
+      title: title || courseExist.title,
+      description: description || courseExist.description,
+      price: price || courseExist.price,
+      level: level || courseExist.level,
+      category: category || courseExist.category,
+      thumbnail: thumbnail || courseExist.thumbnail,
+      video_url: video_url || courseExist.video_url,
+    });
+
+    const refreshedCourse = await Course.getById(req.params.id);
+
+    res.status(200).json({ success: true, data: refreshedCourse });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteCourse = async (req, res) => {
+  try {
+    const courseExist = await Course.getById(req.params.id);
+    if (!courseExist) {
+        return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Check ownership
+    if (Number(courseExist.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete this course' });
+    }
+
+    await Course.delete(req.params.id);
+
+    res.status(200).json({ success: true, message: 'Course deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getInstructorStats = async (req, res) => {
+  try {
+    const instructorId = req.user.id;
+    console.log('--- DEBUG: getInstructorStats ---');
+    console.log('Instructor ID (from req.user):', instructorId, 'Type:', typeof instructorId);
+    
+    // Total Courses
+    const courses = await Course.getAll();
+    console.log('Total Courses in DB:', courses.length);
+    
+    const myCourses = courses.filter(c => {
+      const match = Number(c.instructor_id) === Number(instructorId);
+      if (match) console.log(`Found Match: Course ID ${c.id}, Title: ${c.title}`);
+      return match;
+    });
+    
+    console.log('Filtered Courses Count:', myCourses.length);
+    console.log('--------------------------------');
+    
+    // Active Students (unique)
+    const [stats] = await pool.execute(`
+      SELECT 
+        COUNT(DISTINCT e.user_id) as activeStudents,
+        SUM(c.price) as totalRevenue
+      FROM enrollments e
+      JOIN courses c ON e.course_id = c.id
+      WHERE c.instructor_id = ?
+    `, [instructorId]);
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalCourses: courses.length,
+        activeStudents: stats[0].activeStudents || 0,
+        avgRating: 4.8, 
+        totalRevenue: stats[0].totalRevenue || 0
+      },
+      allCourses: courses
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  createCourse,
+  getCourses,
+  getCourse,
+  updateCourse,
+  deleteCourse,
+  getInstructorStats,
+};

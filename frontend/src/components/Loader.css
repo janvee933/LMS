@@ -1,0 +1,107 @@
+.loader-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: transparent;
+}
+
+.loader-wrapper.full-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  background: rgba(10, 10, 18, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.loader-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.spinner-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-spinner {
+  color: #6366f1;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+}
+
+.spinner-glow {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: #6366f1;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.3;
+  animation: glow-pulse 2s infinite ease-in-out;
+}
+
+.spinner-outer {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 2px solid rgba(99, 102, 241, 0.1);
+  border-top-color: rgba(99, 102, 241, 0.6);
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+.spinner-inner {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(168, 85, 247, 0.1);
+  border-bottom-color: rgba(168, 85, 247, 0.6);
+  border-radius: 50%;
+  animation: spin-reverse 1.2s linear infinite;
+}
+
+.loader-message {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #fff, #a855f7, #6366f1, #fff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-text 3s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.8); opacity: 0.5; }
+}
+
+@keyframes gradient-text {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}

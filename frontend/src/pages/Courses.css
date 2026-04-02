@@ -1,0 +1,38 @@
+.courses-page {
+  padding-bottom: var(--spacing-lg);
+}
+
+.courses-filters {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  margin: 0 auto var(--spacing-lg);
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.filter-btn:hover {
+  background: var(--border-glass);
+  color: var(--text-main);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .courses-filters {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
