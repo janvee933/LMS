@@ -96,7 +96,7 @@
   width: 80px;
   height: 80px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
 }
 
 .continue-info {
@@ -116,7 +116,7 @@
 
 .progress-container {
   height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
   border-radius: 3px;
   margin-bottom: 6px;
 }
@@ -150,7 +150,7 @@
   display: flex;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .resume-btn, .certificate-btn {
@@ -234,7 +234,7 @@
 .admin-card:hover {
   transform: translateY(-5px);
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
 }
 
 .admin-card h3 {
@@ -308,7 +308,7 @@
 }
 
 .admin-input {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-sm);
   padding: 12px;
@@ -355,7 +355,7 @@
 .progress-bar-container {
   flex: 1;
   height: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -399,5 +399,5 @@
 }
 
 .duplicate-user-row:hover td, .new-user-row:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-subtle);
 }

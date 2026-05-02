@@ -53,22 +53,31 @@
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --skeleton-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --bg-subtle: rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-bright: #ffffff;
 }
 
 [data-theme='light'] {
   --bg-main: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.8);
-  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-surface: #f1f5f9;
   
   --text-main: #0f172a;
-  --text-muted: #475569;
+  --text-muted: #334155;
   --text-dim: #64748b;
+  --text-bright: #000000;
 
-  --border-glass: rgba(0, 0, 0, 0.08);
-  --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.05);
+  --border-glass: rgba(0, 0, 0, 0.1);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.04);
   --glass-blur: 8px;
   --skeleton-bg: rgba(0, 0, 0, 0.05);
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --bg-subtle: rgba(0, 0, 0, 0.03);
+  --border-subtle: rgba(0, 0, 0, 0.06);
 }
 
 body {

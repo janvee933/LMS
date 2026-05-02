@@ -55,7 +55,7 @@ const Navbar = () => {
                 <SettingsIcon size={18} />
               </Link>
               <div className="user-info-chip">
-                <span className="nav-item user-name">{user.name}</span>
+                <span className="user-name-text">{user.name}</span>
               </div>
               <button className="nav-item logout-btn" onClick={logout}>
                 <LogOut size={18} /> Logout

@@ -13,12 +13,13 @@
 
 .navbar.scrolled {
   height: 70px;
-  background: rgba(10, 12, 16, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--border-glass);
   box-shadow: var(--shadow-premium);
 }
+
 
 .navbar-container {
   width: 100%;
@@ -50,7 +51,8 @@
 }
 
 .nav-item {
-  color: var(--text-muted);
+  color: var(--text-main);
+  opacity: 0.8;
   font-weight: 600;
   font-size: 15px;
   display: flex;
@@ -61,7 +63,16 @@
 
 .nav-item:hover, .nav-item.active {
   color: var(--primary);
+  opacity: 1;
 }
+
+.user-name-text {
+  color: var(--text-main);
+  font-weight: 700;
+  margin-left: 8px;
+  opacity: 1;
+}
+
 
 .login-link {
   color: var(--text-main);

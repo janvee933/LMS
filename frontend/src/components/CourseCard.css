@@ -113,7 +113,7 @@
 }
 
 .edit-btn {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-glass);
   color: var(--text-main);
   padding: 6px 14px;
@@ -125,9 +125,10 @@
 }
 
 .edit-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--text-dim);
+  background: var(--bg-surface);
+  border-color: var(--primary);
 }
+
 
 .instructor-view {
   color: var(--primary-light) !important;
