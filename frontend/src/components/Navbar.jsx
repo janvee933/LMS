@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, BookOpen, LogIn, UserPlus, LayoutDashboard, LogOut } from 'lucide-react';
+import { Menu, X, BookOpen, LogIn, UserPlus, LayoutDashboard, LogOut, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -32,6 +34,11 @@ const Navbar = () => {
         <div className="navbar-links">
           <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link to="/courses" className={`nav-item ${location.pathname === '/courses' ? 'active' : ''}`}>Courses</Link>
+          
+          <button className="nav-item theme-toggle" onClick={toggleTheme} title="Toggle Theme">
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
           {user ? (
             <>
               <Link 
@@ -39,6 +46,13 @@ const Navbar = () => {
                 className={`nav-item ${location.pathname.includes('dashboard') ? 'active' : ''}`}
               >
                 <LayoutDashboard size={18} /> Dashboard
+              </Link>
+              <Link 
+                to="/settings" 
+                className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+                title="Settings"
+              >
+                <SettingsIcon size={18} />
               </Link>
               <div className="user-info-chip">
                 <span className="nav-item user-name">{user.name}</span>
@@ -74,6 +88,9 @@ const Navbar = () => {
             <Link to={`/${user.role}/dashboard`} className="nav-link" onClick={toggleMenu}>
               Dashboard
             </Link>
+            <Link to="/settings" className="nav-link" onClick={toggleMenu}>
+              Settings
+            </Link>
             <button className="mobile-logout-btn" onClick={() => { logout(); toggleMenu(); }}>Logout</button>
           </>
         ) : (
@@ -82,6 +99,9 @@ const Navbar = () => {
             <Link to="/signup" className="btn-premium" onClick={toggleMenu}>Join Now</Link>
           </>
         )}
+        <button className="mobile-theme-toggle" onClick={() => { toggleTheme(); toggleMenu(); }} style={{ padding: '15px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {theme === 'dark' ? <><Sun size={20} /> Light Mode</> : <><Moon size={20} /> Dark Mode</>}
+        </button>
       </div>
     </nav>
   );

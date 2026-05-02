@@ -42,7 +42,7 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
   };
 
   const isAdmin = user?.role === 'admin';
-  const isOwner = user?.id && instructor_id && Number(user?.id) === Number(instructor_id);
+  const isOwner = user?.id && instructor_id && String(user?.id) === String(instructor_id);
   const showInstructorControls = isAdmin || isOwner;
 
   return (

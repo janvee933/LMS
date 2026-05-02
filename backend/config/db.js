@@ -1,29 +1,21 @@
-const mysql = require('mysql2/promise');
+const mongoose = require('mongoose');
 const path = require('path');
-if (!process.env.DB_HOST) {
+
+if (!process.env.MONGODB_URI) {
     require('dotenv').config({ path: path.join(__dirname, '../.env') });
 }
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-});
-
-const checkConnection = async () => {
+const connectDB = async () => {
     try {
-        const connection = await pool.getConnection();
-        console.log('MySQL Database connected successfully.');
-        connection.release();
-    } catch (err) {
-        console.error('Database connection error:', err.message);
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
     }
 };
 
-checkConnection();
+connectDB();
 
-module.exports = pool;
+module.exports = mongoose.connection;
+

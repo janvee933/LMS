@@ -51,33 +51,18 @@ const Hero = () => {
       </div>
 
       <div className="hero-visual">
-        <div className="visual-card glass main-card">
-          <div className="card-header">
-            <div className="dot red"></div>
-            <div className="dot yellow"></div>
-            <div className="dot green"></div>
-          </div>
-          <div className="card-body">
-            <div className="skeleton-line title"></div>
-            <div className="skeleton-grid">
-              <div className="skeleton-item"></div>
-              <div className="skeleton-item"></div>
-              <div className="skeleton-item"></div>
+        <div className="image-container animate-float">
+          <img src="/hero-image.png" alt="Learning Platform" className="hero-main-image" />
+          <div className="floating-elements">
+            <div className="glass-card floating-stats">
+              <Users size={16} />
+              <span>+2.4k today</span>
+            </div>
+            <div className="glass-card floating-badge">
+              <BookOpen size={16} />
+              <span>New Courses</span>
             </div>
           </div>
-        </div>
-        <div className="visual-card glass floating-card-1">
-          <div className="user-info">
-            <div className="avatar"></div>
-            <div className="user-text">
-              <div className="skeleton-line sm"></div>
-              <div className="skeleton-line xs"></div>
-            </div>
-          </div>
-        </div>
-        <div className="visual-card glass floating-card-2">
-          <div className="progress-circle"></div>
-          <div className="skeleton-line sm"></div>
         </div>
       </div>
     </div>

@@ -58,6 +58,10 @@ const CoursePlayer = () => {
     setQuizResult(null);
     setSelectedAnswers({});
     
+    if (lesson?.id) {
+      sessionStorage.setItem(`lastLesson_${courseId}`, lesson.id);
+    }
+    
     // For lesson-level view (if any quizzes remain in lessons)
     try {
       const res = await api.get(`/quizzes/lesson/${lesson.id}`);
@@ -91,15 +95,17 @@ const CoursePlayer = () => {
 
       await fetchQuizData();
 
-      // Fetch lessons
-      const lessonsRes = await api.get(`/lessons/course/${courseId}`);
-      if (lessonsRes.data.success) {
-        const lessonData = lessonsRes.data.data || [];
-        setLessons(lessonData);
-        if (lessonData.length > 0) {
-          handleSelectLesson(lessonData[0]);
+        // Fetch lessons
+        const lessonsRes = await api.get(`/lessons/course/${courseId}`);
+        if (lessonsRes.data.success) {
+          const lessonData = lessonsRes.data.data || [];
+          setLessons(lessonData);
+          if (lessonData.length > 0) {
+            const savedLessonId = sessionStorage.getItem(`lastLesson_${courseId}`);
+            const lastLesson = lessonData.find(l => String(l.id) === savedLessonId);
+            handleSelectLesson(lastLesson || lessonData[0]);
+          }
         }
-      }
 
       // Fetch user progress
       const progressRes = await api.get(`/progress/course/${courseId}`);
@@ -368,22 +374,32 @@ const CoursePlayer = () => {
         ) : currentLesson ? (
           <>
             <div className="video-container" style={{ position: 'relative', height: '500px', overflow: 'hidden', background: '#0f172a' }}>
-              {currentLesson.video_url ? (
-                /* Simple embed or video element - for demo using placeholder */
-                <div className="video-placeholder" style={{ height: '100%' }}>
-                   <Play size={48} />
-                   <p style={{ marginTop: '16px' }}>Lesson Video Player: {currentLesson.video_url}</p>
-                </div>
+              {currentLesson.video_url && (currentLesson.video_url.toLowerCase().endsWith('.mp4') || currentLesson.video_url.startsWith('/uploads/')) ? (
+                <video 
+                  key={currentLesson.id}
+                  src={currentLesson.video_url} 
+                  controls 
+                  controlsList="nodownload"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                >
+                  Your browser does not support the video tag.
+                </video>
               ) : currentLesson.content_url && (currentLesson.content_url.toLowerCase().endsWith('.pdf') || currentLesson.content_url.includes('/uploads/')) ? (
                 <iframe 
                   src={currentLesson.content_url} 
                   title="Study Material"
                   style={{ width: '100%', height: '100%', border: 'none' }}
                 />
+              ) : currentLesson.video_url ? (
+                 /* Embed logic for YouTube/External links */
+                 <div className="video-placeholder" style={{ height: '100%' }}>
+                    <Play size={48} />
+                    <p style={{ marginTop: '16px' }}>External Video: <a href={currentLesson.video_url} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>{currentLesson.video_url}</a></p>
+                 </div>
               ) : (
                 <div className="video-placeholder" style={{ height: '100%' }}>
                    <FileText size={48} />
-                   <p style={{ marginTop: '16px' }}>Reading Materials</p>
+                   <p style={{ marginTop: '16px' }}>Reading Materials Only</p>
                 </div>
               )}
             </div>

@@ -17,7 +17,7 @@ const Courses = () => {
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState(() => sessionStorage.getItem('coursesActiveFilter') || 'All');
   const [isStudentsModalOpen, setIsStudentsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -40,6 +40,10 @@ const Courses = () => {
         const enrollRes = await api.get('/enrollments/my-enrollments');
         setEnrollments(enrollRes.data.data || []);
       }
+
+      // Apply initial filter
+      const savedFilter = sessionStorage.getItem('coursesActiveFilter') || 'All';
+      applyFilter(savedFilter, coursesData);
     } catch (error) {
       console.error('Error fetching data', error);
       setCourses([]);
@@ -53,17 +57,21 @@ const Courses = () => {
     fetchData();
   }, [user]);
 
-  const handleFilter = (category) => {
-    setActiveFilter(category);
+  const applyFilter = (category, allCourses) => {
     if (category === 'All') {
-      setFilteredCourses(courses);
+      setFilteredCourses(allCourses);
     } else {
-      const filtered = courses.filter(course => 
-        course.title.toLowerCase().includes(category.toLowerCase()) || 
-        course.description.toLowerCase().includes(category.toLowerCase())
+      const filtered = allCourses.filter(course => 
+        course.category === category
       );
       setFilteredCourses(filtered);
     }
+  };
+
+  const handleFilter = (category) => {
+    setActiveFilter(category);
+    sessionStorage.setItem('coursesActiveFilter', category);
+    applyFilter(category, courses);
   };
 
   const handleViewStudents = (course) => {
@@ -140,7 +148,7 @@ const Courses = () => {
       </div>
 
       <div className="courses-filters glass">
-        {['All', 'Web Development', 'Design', 'Business'].map(cat => (
+        {['All', 'Computer Science', 'Data Science', 'Information Technology', 'Personal Development'].map(cat => (
           <button 
             key={cat}
             className={`filter-btn ${activeFilter === cat ? 'active' : ''}`}

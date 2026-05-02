@@ -1,23 +1,45 @@
-const pool = require('../config/db');
+const mongoose = require('mongoose');
+
+const progressSchema = new mongoose.Schema({
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  lesson_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson', required: true },
+  status: { type: String, enum: ['started', 'completed'], default: 'completed' },
+  updated_at: { type: Date, default: Date.now }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+progressSchema.index({ user_id: 1, lesson_id: 1 }, { unique: true });
+
+const ProgressModel = mongoose.model('Progress', progressSchema);
 
 const Progress = {
   async updateStatus(user_id, lesson_id, status) {
-    const [rows] = await pool.execute(
-        'INSERT INTO progress (user_id, lesson_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = ?',
-        [user_id, lesson_id, status || 'completed', status || 'completed']
+    return await ProgressModel.findOneAndUpdate(
+      { user_id, lesson_id },
+      { status: status || 'completed', updated_at: Date.now() },
+      { upsert: true, new: true }
     );
-    return rows;
   },
 
   async getProgressByCourse(user_id, course_id) {
-    const [rows] = await pool.execute(
-      `SELECT p.*, l.title FROM progress p 
-       JOIN lessons l ON p.lesson_id = l.id 
-       WHERE p.user_id = ? AND l.course_id = ?`,
-      [user_id, course_id]
-    );
-    return rows;
+    const Lesson = mongoose.model('Lesson');
+    const lessons = await Lesson.find({ course_id }).select('_id');
+    const lessonIds = lessons.map(l => l._id);
+
+    const progress = await ProgressModel.find({ 
+      user_id, 
+      lesson_id: { $in: lessonIds } 
+    }).populate('lesson_id', 'title').lean();
+
+    return progress.map(p => ({
+      ...p,
+      id: p._id.toString(),
+      title: p.lesson_id?.title
+    }));
   },
 };
 
 module.exports = Progress;
+

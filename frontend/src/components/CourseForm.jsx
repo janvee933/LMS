@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api/axios';
 import Button from './Button';
+import Loader from './Loader';
 
 const CourseForm = ({ onSuccess, onCancel, defaultInstructorId, initialData }) => {
   const [formData, setFormData] = useState({
@@ -43,7 +44,8 @@ const CourseForm = ({ onSuccess, onCancel, defaultInstructorId, initialData }) =
   };
 
   return (
-    <div className="course-form glass animate-slide-up" style={{ padding: '30px', marginBottom: '30px' }}>
+    <div className="course-form glass animate-slide-up" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
+      {loading && <Loader message={formData.id ? 'Updating course details...' : 'Publishing your new course...'} />}
       <h3 style={{ marginBottom: '20px' }}>{formData.id ? 'Edit' : 'Create New'} <span className="gradient-text">Course</span></h3>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>

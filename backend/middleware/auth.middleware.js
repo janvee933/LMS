@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+const User = require('../models/user');
 
 const protect = async (req, res, next) => {
   let token;
@@ -24,16 +24,13 @@ const protect = async (req, res, next) => {
         throw new Error('Invalid token payload');
       }
 
-      const [rows] = await pool.execute(
-        'SELECT id, name, email, role FROM users WHERE id = ?',
-        [userId]
-      );
+      const user = await User.findById(userId);
 
-      if (rows.length === 0) {
+      if (!user) {
         return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
       }
 
-      req.user = rows[0];
+      req.user = user;
       return next();
     } catch (error) {
       console.error(error);

@@ -80,28 +80,45 @@ const Home = () => {
           <h2 className="section-title">Explore Our <span className="gradient-text">Top Courses</span></h2>
           <p className="section-desc">Choose from over 200+ premium courses designed by industry experts.</p>
         </div>
-        <div className="courses-grid">
+        <div className="categories-container">
           {loading ? (
-            [1, 2, 3].map((id) => (
-              <div key={id} className="course-card-skeleton glass">
-                <div className="skeleton-img"></div>
-                <div className="skeleton-content">
-                  <div className="skeleton-line sm"></div>
-                  <div className="skeleton-line md"></div>
-                  <div className="skeleton-line lg"></div>
+            <div className="courses-grid">
+              {[1, 2, 3].map((id) => (
+                <div key={id} className="course-card-skeleton glass">
+                  <div className="skeleton-img"></div>
+                  <div className="skeleton-content">
+                    <div className="skeleton-line sm"></div>
+                    <div className="skeleton-line md"></div>
+                    <div className="skeleton-line lg"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Group by category
+            Object.entries(
+              courses.reduce((acc, course) => {
+                const cat = course.category || 'Other';
+                if (!acc[cat]) acc[cat] = [];
+                acc[cat].push(course);
+                return acc;
+              }, {})
+            ).map(([category, categoryCourses]) => (
+              <div key={category} className="category-section animate-slide-up">
+                <h3 className="category-title">{category}</h3>
+                <div className="courses-grid">
+                  {categoryCourses.map(course => (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      isEnrolled={enrollments.some(e => e.course_id === course.id)}
+                      onEdit={handleEdit}
+                      onManageContent={handleManageContent}
+                      onDelete={handleDelete}
+                    />
+                  ))}
                 </div>
               </div>
-            ))
-          ) : (
-            courses.map(course => (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
-                isEnrolled={enrollments.some(e => e.course_id === course.id)}
-                onEdit={handleEdit}
-                onManageContent={handleManageContent}
-                onDelete={handleDelete}
-              />
             ))
           )}
         </div>

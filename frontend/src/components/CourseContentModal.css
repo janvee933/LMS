@@ -173,9 +173,29 @@
 .lesson-actions button {
   background: none;
   border: none;
-  color: #ef4444;
   cursor: pointer;
   padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.lesson-actions button.edit-lesson-btn {
+  color: #6366f1;
+}
+
+.lesson-actions button.edit-lesson-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.lesson-actions button.delete-lesson-btn {
+  color: #ef4444;
+}
+
+.lesson-actions button.delete-lesson-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 /* Quiz Main View */

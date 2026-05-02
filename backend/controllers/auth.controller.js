@@ -106,7 +106,7 @@ const deleteUser = async (req, res) => {
     const { id } = req.params;
     
     // Check if user is trying to delete themselves
-    if (parseInt(id) === req.user.id) {
+    if (id === req.user.id.toString()) {
       return res.status(400).json({ success: false, message: 'Admin cannot delete their own account' });
     }
 

@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'users', 'instructors', or 'enrollments'
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('adminActiveTab') || 'overview'); // 'overview', 'users', 'instructors', or 'enrollments'
   const [enrollments, setEnrollments] = useState([]);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
   };
 
   const handleViewInstructorCourses = (instructor) => {
-    const courses = allCourses.filter(c => Number(c.instructor_id) === Number(instructor.id));
+    const courses = allCourses.filter(c => String(c.instructor_id) === String(instructor.id));
     setSelectedInstructorCourses(courses);
     setSelectedInstructorName(instructor.name);
     setIsInstructorModalOpen(true);
@@ -100,6 +100,10 @@ const AdminDashboard = () => {
     fetchAdminData();
     fetchEnrollments();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
 
   const handleDeleteUser = async (userId, userName) => {
     if (window.confirm(`Are you sure you want to delete user ${userName}?`)) {
@@ -143,6 +147,7 @@ const AdminDashboard = () => {
         <div className="welcome-text">
           <h1 className="section-title">
             <span className="gradient-text">{user?.name}</span>
+            <span className="role-tag">{user?.role}</span>
           </h1>
           <p className="section-desc">Global platform overview and system management.</p>
         </div>

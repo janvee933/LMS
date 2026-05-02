@@ -15,12 +15,15 @@ const createLesson = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to add lessons to this course' });
     }
 
+    const contentFile = req.files && req.files['content_file'] ? req.files['content_file'][0] : null;
+    const videoFile = req.files && req.files['video_file'] ? req.files['video_file'][0] : null;
+
     const lessonId = await Lesson.create({
       course_id,
       title,
       content,
-      content_url: req.file ? `/uploads/${req.file.filename}` : content_url,
-      video_url,
+      content_url: contentFile ? `/uploads/${contentFile.filename}` : content_url,
+      video_url: videoFile ? `/uploads/${videoFile.filename}` : video_url,
       lesson_order,
     });
 
@@ -53,11 +56,15 @@ const updateLesson = async (req, res) => {
         }
 
         const { title, content, content_url, video_url, lesson_order } = req.body;
+        
+        const contentFile = req.files && req.files['content_file'] ? req.files['content_file'][0] : null;
+        const videoFile = req.files && req.files['video_file'] ? req.files['video_file'][0] : null;
+
         await Lesson.update(req.params.id, {
             title: title || lessonExist.title,
             content: content !== undefined ? content : lessonExist.content,
-            content_url: req.file ? `/uploads/${req.file.filename}` : (content_url !== undefined ? content_url : lessonExist.content_url),
-            video_url: video_url !== undefined ? video_url : lessonExist.video_url,
+            content_url: contentFile ? `/uploads/${contentFile.filename}` : (content_url !== undefined ? content_url : lessonExist.content_url),
+            video_url: videoFile ? `/uploads/${videoFile.filename}` : (video_url !== undefined ? video_url : lessonExist.video_url),
             lesson_order: lesson_order || lessonExist.lesson_order
         });
 

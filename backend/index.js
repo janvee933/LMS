@@ -1,5 +1,6 @@
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('./config/db');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -54,6 +55,7 @@ const progressRoutes = require('./routes/progress.routes');
 const certificateRoutes = require('./routes/certificate.routes');
 const quizRoutes = require('./routes/quiz.routes');
 const ratingRoutes = require('./routes/rating.routes');
+const userRoutes = require('./routes/user.routes');
 
 const errorHandler = require('./middleware/errorHandle');
 
@@ -65,6 +67,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/ratings', ratingRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('LMS Backend API is Running from backend folder...');

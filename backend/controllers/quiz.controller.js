@@ -4,20 +4,31 @@ const Course = require('../models/course');
 
 const createQuizQuestion = async (req, res) => {
   try {
-    const { lesson_id, question, options, correct_answer } = req.body;
+    const { lesson_id, course_id, is_final, question, options, correct_answer } = req.body;
 
-    const lesson = await Lesson.getById(lesson_id);
-    if (!lesson) {
-      return res.status(404).json({ success: false, message: 'Lesson not found' });
+    let targetCourseId = course_id;
+
+    if (lesson_id) {
+      const lesson = await Lesson.getById(lesson_id);
+      if (!lesson) {
+        return res.status(404).json({ success: false, message: 'Lesson not found' });
+      }
+      targetCourseId = lesson.course_id;
     }
 
-    const course = await Course.getById(lesson.course_id);
-    if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    if (!targetCourseId) {
+      return res.status(400).json({ success: false, message: 'Course ID or Lesson ID is required' });
+    }
+
+    const course = await Course.getById(targetCourseId);
+    if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to manage this course' });
     }
 
     const quizId = await Quiz.create({
-      lesson_id,
+      lesson_id: lesson_id || null,
+      course_id: targetCourseId,
+      is_final: is_final || false,
       question,
       options,
       correct_answer
@@ -51,8 +62,8 @@ const updateQuizQuestion = async (req, res) => {
     }
 
     const lesson = await Lesson.getById(quizExist.lesson_id);
-    const course = await Course.getById(lesson.course_id);
-    if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    const course = await Course.getById(lesson ? lesson.course_id : quizExist.course_id);
+    if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to manage this course' });
     }
 
@@ -74,8 +85,8 @@ const deleteQuizQuestion = async (req, res) => {
     }
 
     const lesson = await Lesson.getById(quizExist.lesson_id);
-    const course = await Course.getById(lesson.course_id);
-    if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    const course = await Course.getById(lesson ? lesson.course_id : quizExist.course_id);
+    if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to delete this question' });
     }
 
@@ -118,10 +129,10 @@ const submitFinalQuiz = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Maximum attempts (3) reached. Please contact support.' });
     }
 
-    // 2. Fetch all questions to calculate score
+    // 2. Fetch only final questions to calculate score
     const quizzes = await Quiz.getFinalQuizByCourse(courseId);
     if (quizzes.length === 0) {
-      return res.status(400).json({ success: false, message: 'No quiz questions found for this course.' });
+      return res.status(400).json({ success: false, message: 'No final assessment questions found for this course.' });
     }
 
     let correctCount = 0;

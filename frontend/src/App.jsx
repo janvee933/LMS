@@ -11,6 +11,7 @@ import DashboardRedirect from './components/DashboardRedirect';
 import StudentDashboard from './pages/dashboards/StudentDashboard';
 import InstructorDashboard from './pages/dashboards/InstructorDashboard';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
+import Settings from './pages/Settings';
 import CoursePlayer from './pages/CoursePlayer';
 import Loader from './components/Loader';
 import { useAuth } from './context/AuthContext';
@@ -50,6 +51,7 @@ function App() {
             <Route path="/courses" element={<Courses />} />
             <Route path="/login" element={<AuthForm type="login" />} />
             <Route path="/signup" element={<AuthForm type="signup" />} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* Generic Dashboard Redirector */}
             <Route 

@@ -23,7 +23,7 @@ const InstructorDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses' or 'students'
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('instructorActiveTab') || 'courses'); // 'courses' or 'students'
   const [enrollments, setEnrollments] = useState([]);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
@@ -59,7 +59,7 @@ const InstructorDashboard = () => {
       // Fetch courses (for the list)
       const coursesRes = await api.get('/courses');
       const allCourses = coursesRes.data.data || [];
-      const filtered = allCourses.filter(c => Number(c.instructor_id) === Number(user?.id) || user?.role === 'admin');
+      const filtered = allCourses.filter(c => String(c.instructor_id) === String(user?.id) || user?.role === 'admin');
       setMyCourses(filtered);
     } catch (error) {
       console.error('Error fetching instructor dashboard data', error);
@@ -133,12 +133,17 @@ const InstructorDashboard = () => {
     fetchEnrollments();
   }, [user?.id]);
 
+  useEffect(() => {
+    sessionStorage.setItem('instructorActiveTab', activeTab);
+  }, [activeTab]);
+
   return (
     <div className="dashboard-page page-content animate-fade-in">
       <header className="dashboard-header">
         <div className="welcome-text">
           <h1 className="section-title">
             <span className="gradient-text">{user?.name}</span>
+            <span className="role-tag">{user?.role}</span>
           </h1>
           <p className="section-desc">Manage your content and track student progress below.</p>
         </div>

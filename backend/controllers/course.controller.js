@@ -1,5 +1,4 @@
 const Course = require('../models/course');
-const pool = require('../config/db');
 
 const createCourse = async (req, res) => {
   try {
@@ -63,7 +62,7 @@ const updateCourse = async (req, res) => {
     }
 
     // Check ownership
-    if (Number(courseExist.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    if (courseExist.instructor_id.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
         return res.status(403).json({ success: false, message: 'Not authorized to update this course' });
     }
 
@@ -93,7 +92,7 @@ const deleteCourse = async (req, res) => {
     }
 
     // Check ownership
-    if (Number(courseExist.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    if (courseExist.instructor_id.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
         return res.status(403).json({ success: false, message: 'Not authorized to delete this course' });
     }
 
@@ -108,39 +107,26 @@ const deleteCourse = async (req, res) => {
 const getInstructorStats = async (req, res) => {
   try {
     const instructorId = req.user.id;
-    console.log('--- DEBUG: getInstructorStats ---');
-    console.log('Instructor ID (from req.user):', instructorId, 'Type:', typeof instructorId);
     
     // Total Courses
     const courses = await Course.getAll();
-    console.log('Total Courses in DB:', courses.length);
+    const myCourses = courses.filter(c => c.instructor_id.toString() === instructorId.toString());
     
-    const myCourses = courses.filter(c => {
-      const match = Number(c.instructor_id) === Number(instructorId);
-      if (match) console.log(`Found Match: Course ID ${c.id}, Title: ${c.title}`);
-      return match;
-    });
+    // For now, let's return simplified stats or use models
+    // In a real migration, we'd add aggregation methods to models
+    const Enrollment = require('../models/enrollment');
+    const myEnrollments = await Enrollment.getByInstructor(instructorId);
     
-    console.log('Filtered Courses Count:', myCourses.length);
-    console.log('--------------------------------');
-    
-    // Active Students (unique)
-    const [stats] = await pool.execute(`
-      SELECT 
-        COUNT(DISTINCT e.user_id) as activeStudents,
-        SUM(c.price) as totalRevenue
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      WHERE c.instructor_id = ?
-    `, [instructorId]);
+    const activeStudents = new Set(myEnrollments.map(e => e.student_id?.toString())).size;
+    const totalRevenue = myCourses.reduce((sum, c) => sum + (c.price || 0), 0); // Simplified
 
     res.status(200).json({
       success: true,
       stats: {
-        totalCourses: courses.length,
-        activeStudents: stats[0].activeStudents || 0,
+        totalCourses: myCourses.length,
+        activeStudents: activeStudents || 0,
         avgRating: 4.8, 
-        totalRevenue: stats[0].totalRevenue || 0
+        totalRevenue: totalRevenue || 0
       },
       allCourses: courses
     });
@@ -148,6 +134,7 @@ const getInstructorStats = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 module.exports = {
   createCourse,

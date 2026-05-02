@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Edit2, BookOpen, AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
+import { X, Plus, Trash2, Edit2, BookOpen, AlertCircle, CheckCircle, HelpCircle, Award } from 'lucide-react';
 import api from '../api/axios';
 import Button from './Button';
+import Loader from './Loader';
 import './CourseContentModal.css';
 
 const CourseContentModal = ({ isOpen, onClose, course }) => {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeLesson, setActiveLesson] = useState(null); // Selected for quiz management
+  const [isManagingFinalQuiz, setIsManagingFinalQuiz] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
+  const [isEditingLesson, setIsEditingLesson] = useState(false);
+  const [editingLessonId, setEditingLessonId] = useState(null);
   const [isAddingQuiz, setIsAddingQuiz] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // Success feedback state
   const [newLesson, setNewLesson] = useState({ title: '', content: '', content_url: '', video_url: '', lesson_order: 1 });
   const [contentFile, setContentFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
   const [newQuiz, setNewQuiz] = useState({ 
     question: '', 
     options: ['', '', '', ''], 
@@ -46,16 +52,32 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
     }
   };
 
+  const fetchFinalQuizzes = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/quizzes/course/${course.id}`);
+      if (res.data.success) {
+        setQuizzes(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching final quizzes', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchLessons();
       setActiveLesson(null);
+      setIsManagingFinalQuiz(false);
       setQuizzes([]);
     }
   }, [isOpen, course?.id]);
 
-  const handleCreateLesson = async (e) => {
+  const handleSubmitLesson = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     try {
       const formData = new FormData();
       formData.append('course_id', course.id);
@@ -67,23 +89,64 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
       if (contentFile) {
         formData.append('content_file', contentFile);
       }
+      if (videoFile) {
+        formData.append('video_file', videoFile);
+      }
 
-      const res = await api.post('/lessons', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      let res;
+      if (isEditingLesson) {
+        res = await api.put(`/lessons/${editingLessonId}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        res = await api.post('/lessons', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
 
       if (res.data.success) {
-        setLessons([...lessons, res.data.data]);
-        setActiveLesson(res.data.data); // Auto-select new lesson
+        if (isEditingLesson) {
+          setLessons(lessons.map(l => l.id === editingLessonId ? res.data.data : l));
+          if (activeLesson?.id === editingLessonId) setActiveLesson(res.data.data);
+        } else {
+          setLessons([...lessons, res.data.data]);
+          setActiveLesson(res.data.data); // Auto-select new lesson
+        }
         setIsAddingLesson(false);
-        setNewLesson({ title: '', content: '', content_url: '', video_url: '', lesson_order: lessons.length + 1 });
-        setContentFile(null);
+        resetLessonForm();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to create lesson');
+      alert(err.response?.data?.message || 'Failed to save lesson');
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleEditLesson = (lesson) => {
+    setIsAddingLesson(true);
+    setIsEditingLesson(true);
+    setEditingLessonId(lesson.id);
+    setNewLesson({
+      title: lesson.title,
+      content: lesson.content || '',
+      content_url: lesson.content_url || '',
+      video_url: lesson.video_url || '',
+      lesson_order: lesson.lesson_order
+    });
+    // Scroll to the form
+    document.querySelector('.mini-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const resetLessonForm = () => {
+    setIsEditingLesson(false);
+    setEditingLessonId(null);
+    setNewLesson({ title: '', content: '', content_url: '', video_url: '', lesson_order: lessons.length + 1 });
+    setContentFile(null);
+    setVideoFile(null);
   };
 
   const handleDeleteLesson = async (id) => {
@@ -100,8 +163,15 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
   };
 
   const handleSelectLesson = (lesson) => {
+    setIsManagingFinalQuiz(false);
     setActiveLesson(lesson);
     fetchQuizzes(lesson.id);
+  };
+
+  const handleSelectFinalQuiz = () => {
+    setIsManagingFinalQuiz(true);
+    setActiveLesson(null);
+    fetchFinalQuizzes();
   };
 
   const handleCreateQuiz = async (e) => {
@@ -111,10 +181,20 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
       return;
     }
     try {
-      const res = await api.post('/quizzes', { ...newQuiz, lesson_id: activeLesson.id });
+      const payload = { 
+        ...newQuiz, 
+        course_id: course.id,
+        is_final: isManagingFinalQuiz 
+      };
+      
+      if (!isManagingFinalQuiz) {
+        payload.lesson_id = activeLesson.id;
+      }
+
+      const res = await api.post('/quizzes', payload);
       if (res.data.success) {
         setQuizzes([...quizzes, res.data.data]);
-        setSaveStatus('Success! Question added to this lesson.');
+        setSaveStatus(`Success! Question added to ${isManagingFinalQuiz ? 'Final Assessment' : 'this lesson'}.`);
         setTimeout(() => setSaveStatus(null), 3000);
         setNewQuiz({ question: '', options: ['', '', '', ''], correct_answer: '' });
       }
@@ -136,6 +216,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
 
   return (
     <div className="content-modal-overlay animate-fade-in" onClick={onClose}>
+      {isSaving && <Loader message="Uploading and saving lesson content..." />}
       <div className="content-modal-container glass animate-slide-up" onClick={e => e.stopPropagation()}>
         <div className="content-modal-header">
           <div>
@@ -158,7 +239,13 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
             </div>
 
             {isAddingLesson && (
-              <form className="mini-form glass" onSubmit={handleCreateLesson}>
+              <form className="mini-form glass" onSubmit={handleSubmitLesson}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h4 style={{ fontSize: '0.8rem', color: '#6366f1' }}>{isEditingLesson ? 'Edit Lesson' : 'Add New Lesson'}</h4>
+                  {isEditingLesson && (
+                    <button type="button" onClick={resetLessonForm} style={{ fontSize: '0.7rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
+                  )}
+                </div>
                 <input 
                   placeholder="Lesson Title" required
                   value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})}
@@ -188,6 +275,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                   <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '5px' }}>Reading Material (PDF)</label>
                   <input 
                     type="file" 
+                    key={isEditingLesson ? `pdf-edit-${editingLessonId}` : 'pdf-new'}
                     accept=".pdf"
                     onChange={e => setContentFile(e.target.files[0])}
                     style={{ 
@@ -201,7 +289,33 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                   />
                 </div>
 
-                <Button type="submit" size="sm">Save Lesson</Button>
+                <div className="file-upload-group" style={{ marginBottom: '10px' }}>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '5px' }}>Lesson Video (MP4)</label>
+                  <input 
+                    type="file" 
+                    key={isEditingLesson ? `video-edit-${editingLessonId}` : 'video-new'}
+                    accept="video/mp4"
+                    onChange={e => setVideoFile(e.target.files[0])}
+                    style={{ 
+                      fontSize: '12px', 
+                      color: '#94a3b8', 
+                      background: 'rgba(255,255,255,0.05)', 
+                      padding: '5px', 
+                      borderRadius: '4px', 
+                      width: '100%' 
+                    }}
+                  />
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>Recommended: Max 100MB per lesson</div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  variant={isEditingLesson ? "secondary" : "primary"}
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Processing...' : (isEditingLesson ? 'Update Lesson' : 'Save Lesson')}
+                </Button>
               </form>
             )}
 
@@ -215,72 +329,37 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                   <div className="lesson-rank">{idx + 1}</div>
                   <div className="lesson-info">
                     <span className="l-title">{lesson.title}</span>
-                    <span className="l-meta" style={{ display: 'flex', gap: '8px' }}>
-                      {lesson.video_url && <span style={{ opacity: 0.7 }}>Video</span>}
-                      {lesson.content_url && <span style={{ color: '#ef4444', fontWeight: 'bold' }}>PDF</span>}
-                      {!lesson.video_url && !lesson.content_url && <span style={{ opacity: 0.5 }}>Text Only</span>}
-                    </span>
                   </div>
                   <div className="lesson-actions" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => handleDeleteLesson(lesson.id)}><Trash2 size={14} /></button>
+                    <button className="edit-lesson-btn" onClick={() => handleEditLesson(lesson)}><Edit2 size={14} /></button>
+                    <button className="delete-lesson-btn" onClick={() => handleDeleteLesson(lesson.id)}><Trash2 size={14} /></button>
                   </div>
                 </div>
               )) : (
                 <div className="empty-mini">No lessons yet.</div>
               )}
             </div>
+
+            <div 
+              className={`lesson-item final-quiz-sidebar ${isManagingFinalQuiz ? 'active' : ''}`}
+              onClick={handleSelectFinalQuiz}
+              style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}
+            >
+              <div className="lesson-rank" style={{ background: '#fbbf24' }}><Award size={14} /></div>
+              <div className="lesson-info">
+                <span className="l-title" style={{ fontWeight: 'bold', color: '#fbbf24' }}>Final Assessment</span>
+                <span className="l-meta" style={{ fontSize: '10px' }}>Course Graduation Quiz</span>
+              </div>
+            </div>
           </div>
 
           <div className="quiz-main-view">
-            {activeLesson ? (
+            {activeLesson || isManagingFinalQuiz ? (
               <>
-                <div className="active-lesson-details glass animate-slide-up" style={{ padding: '25px', margin: '0 30px 20px', border: '1px solid rgba(255, 255, 255, 0.05)', background: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <span className="lesson-label" style={{ color: '#6366f1', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>Lesson Preview</span>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Instructor View</span>
-                  </div>
-                  <h4 style={{ fontSize: '1.25rem', color: 'white', marginBottom: '10px' }}>{activeLesson.title}</h4>
-                  <div className="lesson-description-preview" style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.6', maxHeight: '150px', overflowY: 'auto', paddingRight: '10px' }}>
-                    {activeLesson.content ? (
-                      activeLesson.content.split('\n').map((p, i) => (
-                        <p key={i} style={{ marginBottom: '8px' }}>{p}</p>
-                      ))
-                    ) : (
-                      <em style={{ color: '#475569' }}>No description provided for this lesson.</em>
-                    )}
-                  </div>
-                  
-                  {activeLesson.content_url && (
-                    <div className="lesson-material-preview" style={{ 
-                      marginTop: '20px', 
-                      background: 'rgba(0, 0, 0, 0.2)', 
-                      borderRadius: '12px', 
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <span style={{ fontSize: '11px', fontWeight: '800', color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PDF Preview</span>
-                         <a 
-                            href={activeLesson.content_url} 
-                            target="_blank" rel="noreferrer"
-                            style={{ fontSize: '11px', color: '#94a3b8', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px' }}
-                          >
-                            Open in New Tab
-                          </a>
-                      </div>
-                      <iframe 
-                        src={activeLesson.content_url} 
-                        title="Instructor PDF Preview"
-                        style={{ width: '100%', height: '350px', border: 'none' }}
-                      />
-                    </div>
-                  )}
-                </div>
-
                 <div className="quiz-header">
                   <div>
-                    <span className="lesson-label">Lesson {lessons.findIndex(l => l.id === activeLesson.id) + 1}</span>
-                    <h4>{activeLesson.title} Quizzes</h4>
+                    <span className="lesson-label">{isManagingFinalQuiz ? 'Course Level' : `Lesson ${lessons.findIndex(l => l.id === activeLesson.id) + 1}`}</span>
+                    <h4>{isManagingFinalQuiz ? 'Final Assessment Questions' : `${activeLesson.title} Quizzes`}</h4>
                   </div>
                   <Button size="sm" onClick={() => setIsAddingQuiz(!isAddingQuiz)}>
                     {isAddingQuiz ? 'Cancel' : <><Plus size={14} /> Add Question</>}
@@ -352,7 +431,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                   )) : (
                     <div className="empty-quiz">
                       <HelpCircle size={40} />
-                      <p>No questions added to this lesson's quiz yet.</p>
+                      <p>No questions added to this {isManagingFinalQuiz ? 'assessment' : "lesson's quiz"} yet.</p>
                     </div>
                   )}
                 </div>
@@ -360,8 +439,8 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
             ) : (
               <div className="select-lesson-prompt">
                 <BookOpen size={60} />
-                <h3>Select a lesson to manage its quizzes</h3>
-                <p>Add lessons on the left, then click them to add assessment questions.</p>
+                <h3>Select a lesson or Final Assessment to manage quizzes</h3>
+                <p>Add lessons on the left, then click them or the Final Assessment button to add questions.</p>
               </div>
             )}
           </div>
