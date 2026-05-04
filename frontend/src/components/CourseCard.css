@@ -5,12 +5,14 @@
   overflow: hidden;
   transition: var(--transition-bounce);
   height: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
 }
 
 .course-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  border-color: var(--primary-light);
+  box-shadow: var(--shadow-premium);
+  border-color: var(--primary);
 }
 
 .card-image {

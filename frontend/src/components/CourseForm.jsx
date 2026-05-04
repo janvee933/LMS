@@ -11,7 +11,7 @@ const CourseForm = ({ onSuccess, onCancel, defaultInstructorId, initialData }) =
     instructor_id: initialData?.instructor_id || defaultInstructorId,
     price: initialData?.price || '',
     level: initialData?.level || 'Beginner',
-    category: initialData?.category || 'Development',
+    category: initialData?.category || 'Computer Science',
     thumbnail: initialData?.thumbnail || '',
     video_url: initialData?.video_url || ''
   });
@@ -64,10 +64,10 @@ const CourseForm = ({ onSuccess, onCancel, defaultInstructorId, initialData }) =
               onChange={e => setFormData({...formData, category: e.target.value})}
               className="admin-input"
             >
-              <option value="Development">Development</option>
-              <option value="Design">Design</option>
-              <option value="Business">Business</option>
-              <option value="Marketing">Marketing</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Personal Development">Personal Development</option>
             </select>
           </div>
           <div className="form-group">

@@ -50,17 +50,12 @@ const InstructorDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch stats
+      // Fetch stats and my courses
       const statsRes = await api.get('/courses/instructor-stats');
       if (statsRes.data.success) {
         setStats(statsRes.data.stats);
+        setMyCourses(statsRes.data.myCourses || []);
       }
-
-      // Fetch courses (for the list)
-      const coursesRes = await api.get('/courses');
-      const allCourses = coursesRes.data.data || [];
-      const filtered = allCourses.filter(c => String(c.instructor_id) === String(user?.id) || user?.role === 'admin');
-      setMyCourses(filtered);
     } catch (error) {
       console.error('Error fetching instructor dashboard data', error);
     } finally {

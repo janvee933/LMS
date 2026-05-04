@@ -149,11 +149,11 @@ const StudentDashboard = () => {
                   <Button variant="secondary" className="resume-btn" onClick={() => handleResume(item.course_id)}>
                     {item.progress === 100 ? 'Go to Course' : 'Resume'}
                   </Button>
-                  {item.progress === 100 && (
-                     <Button variant="outline" className="rate-btn-dashboard" onClick={() => handleOpenRating(item)} style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
-                        <Star size={16} fill="#fbbf24" /> Rate
-                     </Button>
-                  )}
+                  
+                  <Button variant="outline" className="rate-btn-dashboard" onClick={() => handleOpenRating(item)} style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
+                    <Star size={16} fill="#fbbf24" /> Rate
+                  </Button>
+
                   {item.quiz_status === 'passed' && (
                     <Button variant="primary" className="certificate-btn" onClick={() => handleViewCertificate(item.course_id)}>
                       <Award size={16} /> Certificate

@@ -108,17 +108,15 @@ const getInstructorStats = async (req, res) => {
   try {
     const instructorId = req.user.id;
     
-    // Total Courses
-    const courses = await Course.getAll();
-    const myCourses = courses.filter(c => c.instructor_id.toString() === instructorId.toString());
+    // Total Courses - Direct query for reliability
+    const myCourses = await Course.getByInstructor(instructorId);
     
     // For now, let's return simplified stats or use models
-    // In a real migration, we'd add aggregation methods to models
     const Enrollment = require('../models/enrollment');
     const myEnrollments = await Enrollment.getByInstructor(instructorId);
     
     const activeStudents = new Set(myEnrollments.map(e => e.student_id?.toString())).size;
-    const totalRevenue = myCourses.reduce((sum, c) => sum + (c.price || 0), 0); // Simplified
+    const totalRevenue = myCourses.reduce((sum, c) => sum + (c.price || 0), 0); 
 
     res.status(200).json({
       success: true,
@@ -128,7 +126,7 @@ const getInstructorStats = async (req, res) => {
         avgRating: 4.8, 
         totalRevenue: totalRevenue || 0
       },
-      allCourses: courses
+      myCourses // Return filtered courses directly
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

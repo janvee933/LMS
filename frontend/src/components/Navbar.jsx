@@ -9,6 +9,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -20,6 +21,12 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close dropdown on location change
+  useEffect(() => {
+    setShowProfileMenu(false);
+    setIsOpen(false);
+  }, [location]);
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
@@ -30,78 +37,100 @@ const Navbar = () => {
           <span className="logo-text">Learn<span className="gradient-text">ify</span></span>
         </Link>
 
-        {/* Desktop Menu */}
-        <div className="navbar-links">
-          <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
-          <Link to="/courses" className={`nav-item ${location.pathname === '/courses' ? 'active' : ''}`}>Courses</Link>
-          
-          <button className="nav-item theme-toggle" onClick={toggleTheme} title="Toggle Theme">
+        {/* Main Navigation */}
+        <div className="navbar-main">
+          <Link to="/" className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
+          <Link to="/courses" className={`navbar-link ${location.pathname === '/courses' ? 'active' : ''}`}>Courses</Link>
+        </div>
+
+        {/* Action Group */}
+        <div className="navbar-actions">
+          <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {user ? (
-            <>
-              <Link 
-                to={`/${user.role}/dashboard`} 
-                className={`nav-item ${location.pathname.includes('dashboard') ? 'active' : ''}`}
-              >
-                <LayoutDashboard size={18} /> Dashboard
-              </Link>
-              <Link 
-                to="/settings" 
-                className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
-                title="Settings"
-              >
-                <SettingsIcon size={18} />
-              </Link>
-              <div className="user-info-chip">
-                <span className="user-name-text">{user.name}</span>
-              </div>
-              <button className="nav-item logout-btn" onClick={logout}>
-                <LogOut size={18} /> Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="nav-item login-link">
-                <LogIn size={18} /> Login
-              </Link>
-              <Link to="/signup" className="btn-premium signup-btn">
-                <UserPlus size={18} /> Join Now
-              </Link>
-            </>
-          )}
-        </div>
+          <div className="navbar-divider"></div>
 
-        {/* Mobile Toggle */}
-        <div className="mobile-toggle" onClick={toggleMenu}>
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
+          {user ? (
+            <div className="user-profile-wrapper">
+              <div 
+                className={`user-profile ${showProfileMenu ? 'active' : ''}`}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <div className="user-avatar">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="user-details">
+                  <span className="user-name">{user.name}</span>
+                  <span className="user-role">{user.role}</span>
+                </div>
+              </div>
+
+              {showProfileMenu && (
+                <div className="profile-dropdown">
+                  <Link to={`/${user.role}/dashboard`} className="dropdown-item">
+                    <LayoutDashboard size={18} /> Dashboard
+                  </Link>
+                  <Link to="/settings" className="dropdown-item">
+                    <SettingsIcon size={18} /> Settings
+                  </Link>
+                  <div className="dropdown-divider"></div>
+                  <button className="dropdown-item logout-item" onClick={logout}>
+                    <LogOut size={18} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="auth-actions">
+              <Link to="/login" className="login-link">Login</Link>
+              <Link to="/signup" className="btn-premium signup-btn">Join Now</Link>
+            </div>
+          )}
+
+          {/* Mobile Toggle */}
+          <div className="mobile-toggle" onClick={toggleMenu}>
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
-        <Link to="/" onClick={toggleMenu}>Home</Link>
-        <Link to="/courses" onClick={toggleMenu}>Courses</Link>
-        {user ? (
-          <>
-            <Link to={`/${user.role}/dashboard`} className="nav-link" onClick={toggleMenu}>
-              Dashboard
-            </Link>
-            <Link to="/settings" className="nav-link" onClick={toggleMenu}>
-              Settings
-            </Link>
-            <button className="mobile-logout-btn" onClick={() => { logout(); toggleMenu(); }}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" onClick={toggleMenu}>Login</Link>
-            <Link to="/signup" className="btn-premium" onClick={toggleMenu}>Join Now</Link>
-          </>
-        )}
-        <button className="mobile-theme-toggle" onClick={() => { toggleTheme(); toggleMenu(); }} style={{ padding: '15px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {theme === 'dark' ? <><Sun size={20} /> Light Mode</> : <><Moon size={20} /> Dark Mode</>}
-        </button>
+        <div className="mobile-menu-header">
+          <Link to="/" onClick={toggleMenu} className="navbar-logo">
+            <BookOpen className="logo-icon" />
+            <span className="logo-text">Learn<span className="gradient-text">ify</span></span>
+          </Link>
+          <div className="mobile-close" onClick={toggleMenu}>
+            <X size={28} />
+          </div>
+        </div>
+
+        <div className="mobile-nav-links">
+          <Link to="/" onClick={toggleMenu}>Home</Link>
+          <Link to="/courses" onClick={toggleMenu}>Courses</Link>
+          {user ? (
+            <>
+              <Link to={`/${user.role}/dashboard`} onClick={toggleMenu}>Dashboard</Link>
+              <Link to="/settings" onClick={toggleMenu}>Settings</Link>
+              <button className="mobile-logout-btn" onClick={() => { logout(); toggleMenu(); }}>
+                <LogOut size={20} /> Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={toggleMenu}>Login</Link>
+              <Link to="/signup" className="btn-premium" onClick={toggleMenu}>Join Now</Link>
+            </>
+          )}
+        </div>
+
+        <div className="mobile-menu-footer">
+          <button className="mobile-theme-toggle" onClick={() => { toggleTheme(); toggleMenu(); }}>
+            {theme === 'dark' ? <><Sun size={20} /> Light Mode</> : <><Moon size={20} /> Dark Mode</>}
+          </button>
+        </div>
       </div>
     </nav>
   );

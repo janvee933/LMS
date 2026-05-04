@@ -11,7 +11,7 @@ const createLesson = async (req, res) => {
     }
 
     
-    if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to add lessons to this course' });
     }
 
@@ -51,7 +51,7 @@ const updateLesson = async (req, res) => {
         }
 
         const course = await Course.getById(lessonExist.course_id);
-        if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+        if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
           return res.status(403).json({ success: false, message: 'Not authorized to update lessons in this course' });
         }
 
@@ -83,7 +83,7 @@ const deleteLesson = async (req, res) => {
         }
 
         const course = await Course.getById(lessonExist.course_id);
-        if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+        if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
           return res.status(403).json({ success: false, message: 'Not authorized to delete lessons in this course' });
         }
 

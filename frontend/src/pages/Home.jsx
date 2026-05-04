@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Hero from '../components/Hero';
 import CourseCard from '../components/CourseCard';
 import Loader from '../components/Loader';
 import CourseForm from '../components/CourseForm';
 import CourseContentModal from '../components/CourseContentModal';
+import CourseDetailModal from '../components/CourseDetailModal';
 import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 const Home = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +20,8 @@ const Home = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedContentCourse, setSelectedContentCourse] = useState(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedPreviewCourse, setSelectedPreviewCourse] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -54,6 +59,35 @@ const Home = () => {
     setIsEditModalOpen(false);
     setSelectedCourse(null);
     fetchData();
+  };
+
+  const handleOpenPreview = (course) => {
+    setSelectedPreviewCourse(course);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleEnrollFromPreview = async (course) => {
+    if (enrollments.some(e => e.course_id === course.id)) {
+      navigate(`/course/${course.id}/player`);
+      return;
+    }
+
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await api.post('/enrollments/enroll', { course_id: course.id });
+      if (response.data.success) {
+        alert('Successfully enrolled in ' + course.title);
+        setIsPreviewModalOpen(false);
+        fetchData(); // Refresh enrollments
+        navigate(`/course/${course.id}/player`);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Enrollment failed');
+    }
   };
 
   const handleDelete = async (course) => {
@@ -112,6 +146,7 @@ const Home = () => {
                       key={course.id} 
                       course={course} 
                       isEnrolled={enrollments.some(e => e.course_id === course.id)}
+                      onOpen={handleOpenPreview}
                       onEdit={handleEdit}
                       onManageContent={handleManageContent}
                       onDelete={handleDelete}
@@ -142,6 +177,14 @@ const Home = () => {
         isOpen={isContentModalOpen}
         onClose={() => { setIsContentModalOpen(false); setSelectedContentCourse(null); }}
         course={selectedContentCourse}
+      />
+
+      <CourseDetailModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => { setIsPreviewModalOpen(false); setSelectedPreviewCourse(null); }}
+        course={selectedPreviewCourse}
+        isEnrolled={enrollments.some(e => e.course_id === selectedPreviewCourse?.id)}
+        onEnroll={handleEnrollFromPreview}
       />
     </div>
   );

@@ -180,7 +180,7 @@ const grantExtraAttempt = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
-    if (Number(course.instructor_id) !== Number(req.user.id) && req.user.role !== 'admin') {
+    if (String(course.instructor_id) !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to grant attempts for this course' });
     }
 

@@ -84,6 +84,10 @@ const Enrollment = {
       completed_lessons: 0
     }));
   },
+
+  async getStudentCount(course_id) {
+    return await EnrollmentModel.countDocuments({ course_id });
+  },
 };
 
 module.exports = Enrollment;

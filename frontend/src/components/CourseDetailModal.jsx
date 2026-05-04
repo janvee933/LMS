@@ -50,8 +50,8 @@ const CourseDetailModal = ({ isOpen, onClose, course, isEnrolled, onEnroll }) =>
               </p>
 
               <div className="course-highlights">
-                <div className="highlight"><CheckCircle size={16} /> Full lifetime access</div>
-                <div className="highlight"><CheckCircle size={16} /> Access on mobile and TV</div>
+                <div className="highlight"><CheckCircle size={16} /> Full 2 years access</div>
+                <div className="highlight"><CheckCircle size={16} /> Access on any smart device</div>
                 <div className="highlight"><CheckCircle size={16} /> Certificate of completion</div>
               </div>
             </div>
