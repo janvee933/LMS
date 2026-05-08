@@ -142,29 +142,42 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="dashboard-page page-content animate-fade-in">
-      <header className="dashboard-header">
-        <div className="welcome-text">
-          <h1 className="section-title">
-            <span className="gradient-text">{user?.name}</span>
-            <span className="role-tag">{user?.role}</span>
-          </h1>
-          <p className="section-desc">Global platform overview and system management.</p>
+    <div className="dashboard-page page-content animate-fade-in admin-layout">
+      <aside className="admin-sidebar glass">
+        <div className="sidebar-brand">
+          <ShieldCheck size={28} /> Admin Panel
         </div>
-        <div className="admin-actions">
-          <Button variant="secondary" onClick={() => {
-            if (activeTab === 'overview') setActiveTab('users');
-            else if (activeTab === 'users') setActiveTab('instructors');
-            else if (activeTab === 'instructors') setActiveTab('enrollments');
-            else setActiveTab('overview');
-          }}>
-            {activeTab === 'overview' ? 'Manage Users' : activeTab === 'users' ? 'Manage Instructors' : activeTab === 'instructors' ? 'Student Progress' : 'Back to Overview'}
-          </Button>
-          <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
-            {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create Course</>}
-          </Button>
-        </div>
-      </header>
+        <nav className="sidebar-nav">
+          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+            <Layout size={18} /> Overview
+          </button>
+          <button className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
+            <Users size={18} /> Students
+          </button>
+          <button className={`nav-item ${activeTab === 'instructors' ? 'active' : ''}`} onClick={() => setActiveTab('instructors')}>
+            <Award size={18} /> Instructors
+          </button>
+          <button className={`nav-item ${activeTab === 'enrollments' ? 'active' : ''}`} onClick={() => setActiveTab('enrollments')}>
+            <BookOpen size={18} /> Progress Tracking
+          </button>
+        </nav>
+      </aside>
+
+      <main className="admin-main-content">
+        <header className="dashboard-header">
+          <div className="welcome-text">
+            <h1 className="section-title">
+              <span className="gradient-text">{user?.name}</span>
+              <span className="role-tag">{user?.role}</span>
+            </h1>
+            <p className="section-desc">Global platform overview and system management.</p>
+          </div>
+          <div className="admin-actions">
+            <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
+              {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create Course</>}
+            </Button>
+          </div>
+        </header>
 
       {isCreatingCourse && (
         <CourseForm 
@@ -297,7 +310,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(u => (
+                  {users.filter(u => u.role === 'student').map(u => (
                     <tr key={u.id}>
                       <td>{u.name}</td>
                       <td>{u.email}</td>
@@ -486,6 +499,7 @@ const AdminDashboard = () => {
           </div>
         </section>
       )}
+      </main>
       <StudentCoursesModal 
         isOpen={isStudentModalOpen}
         onClose={() => { setIsStudentModalOpen(false); setSelectedStudent(null); }}

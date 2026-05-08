@@ -58,21 +58,27 @@ const CourseDetailModal = ({ isOpen, onClose, course, isEnrolled, onEnroll }) =>
 
             <div className="info-footer">
               <div className="modal-price">
-                <span className="price-label">Investment</span>
-                <div className="price-val">₹{price || '49.99'}</div>
+                <span className="price-label">{isEnrolled ? 'Status' : 'Investment'}</span>
+                {isEnrolled ? (
+                  <div className="price-val" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <CheckCircle size={20} /> Enrolled
+                  </div>
+                ) : (
+                  <div className="price-val">₹{price || '49.99'}</div>
+                )}
               </div>
               
               <div className="modal-cta-group">
                 {isEnrolled ? (
                   <Button variant="primary" size="lg" onClick={() => onEnroll(course)}>
-                     Go to Course <Play size={18} />
+                     Start Study <Play size={18} style={{ marginLeft: '8px' }} />
                   </Button>
                 ) : (
                   <Button variant="primary" size="lg" onClick={() => onEnroll(course)}>
                     Enroll Now <ChevronRight size={18} />
                   </Button>
                 )}
-                <Button variant="outline" size="lg" onClick={onClose}>Maybe Later</Button>
+                <Button variant="outline" size="lg" onClick={onClose}>{isEnrolled ? 'Close' : 'Maybe Later'}</Button>
               </div>
             </div>
           </div>

@@ -36,6 +36,7 @@ const Enrollment = {
     return enrollments.map(e => ({
       ...e,
       id: e._id.toString(),
+      course_id: e.course_id?._id ? e.course_id._id.toString() : e.course_id?.toString(),
       title: e.course_id?.title,
       thumbnail: e.course_id?.thumbnail,
       progress: 0, // Placeholder

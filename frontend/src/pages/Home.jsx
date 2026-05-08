@@ -7,6 +7,7 @@ import Loader from '../components/Loader';
 import CourseForm from '../components/CourseForm';
 import CourseContentModal from '../components/CourseContentModal';
 import CourseDetailModal from '../components/CourseDetailModal';
+import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
@@ -22,6 +23,7 @@ const Home = () => {
   const [selectedContentCourse, setSelectedContentCourse] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedPreviewCourse, setSelectedPreviewCourse] = useState(null);
+  const [paymentCourse, setPaymentCourse] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -77,13 +79,15 @@ const Home = () => {
       return;
     }
 
+    setPaymentCourse(course);
+  };
+
+  const processPaymentEnrollment = async (course) => {
     try {
       const response = await api.post('/enrollments/enroll', { course_id: course.id });
       if (response.data.success) {
-        alert('Successfully enrolled in ' + course.title);
-        setIsPreviewModalOpen(false);
-        fetchData(); // Refresh enrollments
-        navigate(`/course/${course.id}/player`);
+        setPaymentCourse(null);
+        fetchData(); // Refresh enrollments, UI updates to "Enrolled"
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Enrollment failed');
@@ -185,6 +189,13 @@ const Home = () => {
         course={selectedPreviewCourse}
         isEnrolled={enrollments.some(e => e.course_id === selectedPreviewCourse?.id)}
         onEnroll={handleEnrollFromPreview}
+      />
+
+      <PaymentModal
+        isOpen={!!paymentCourse}
+        onClose={() => setPaymentCourse(null)}
+        course={paymentCourse}
+        onConfirm={processPaymentEnrollment}
       />
     </div>
   );

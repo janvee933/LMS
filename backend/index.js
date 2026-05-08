@@ -56,6 +56,7 @@ const certificateRoutes = require('./routes/certificate.routes');
 const quizRoutes = require('./routes/quiz.routes');
 const ratingRoutes = require('./routes/rating.routes');
 const userRoutes = require('./routes/user.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 const errorHandler = require('./middleware/errorHandle');
 
@@ -68,6 +69,7 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
   res.send('LMS Backend API is Running from backend folder...');

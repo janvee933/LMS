@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, Book, Star, ChevronRight, Loader2, CheckCircle, Users, Play, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import PaymentModal from './PaymentModal';
 import './CourseCard.css';
 
 const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit, onManageContent, onDelete }) => {
@@ -10,12 +11,18 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [localEnrolled, setLocalEnrolled] = useState(isEnrolled);
 
-  const handleEnroll = async (e) => {
+  useEffect(() => {
+    setLocalEnrolled(isEnrolled);
+  }, [isEnrolled]);
+
+  const handleEnrollClick = (e) => {
     e.stopPropagation(); // Prevent card click
     e.preventDefault();
     
-    if (isEnrolled) {
+    if (localEnrolled) {
       navigate(`/course/${id}/player`);
       return;
     }
@@ -25,13 +32,18 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
       return;
     }
 
+    setShowPayment(true);
+  };
+
+  const processEnrollment = async () => {
     try {
       setLoading(true);
       const response = await api.post('/enrollments/enroll', { course_id: id });
       
       if (response.data.success) {
-        alert('Successfully enrolled in ' + title);
-        navigate(`/course/${id}/player`);
+        setShowPayment(false);
+        setLocalEnrolled(true);
+        // We will not navigate immediately so the user can see the "Enrolled" button state.
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Enrollment failed. Please try again.';
@@ -40,6 +52,7 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
       setLoading(false);
     }
   };
+
 
   const isAdmin = user?.role === 'admin';
   const isOwner = user?.id && instructor_id && String(user?.id) === String(instructor_id);
@@ -107,14 +120,14 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
               </div>
             ) : (
               <button 
-                onClick={handleEnroll} 
-                className={`enroll-card-btn ${isEnrolled ? 'already-enrolled' : ''}`}
+                onClick={handleEnrollClick} 
+                className={`enroll-card-btn ${localEnrolled ? 'already-enrolled' : ''}`}
                 disabled={loading}
               >
                 {loading ? (
                   <>Enrolling... <Loader2 size={16} className="animate-spin" /></>
-                ) : isEnrolled ? (
-                  <>View Player <Play size={16} /></>
+                ) : localEnrolled ? (
+                  <>Enrolled <CheckCircle size={16} /></>
                 ) : (
                   <>Enroll Now <ChevronRight size={18} /></>
                 )}
@@ -123,6 +136,18 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
           </div>
         </div>
       </div>
+      
+      {showPayment && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={(e) => {
+            if(e) e.stopPropagation();
+            setShowPayment(false);
+          }}
+          course={course}
+          onConfirm={processEnrollment}
+        />
+      )}
     </div>
   );
 };

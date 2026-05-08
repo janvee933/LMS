@@ -36,6 +36,7 @@ const Progress = {
     return progress.map(p => ({
       ...p,
       id: p._id.toString(),
+      lesson_id: p.lesson_id?._id ? p.lesson_id._id.toString() : p.lesson_id?.toString(),
       title: p.lesson_id?.title
     }));
   },

@@ -67,11 +67,38 @@ const User = {
   },
 
   async findAll() {
-    // Note: The original SQL had subqueries for counts. 
-    // We'll need to handle these differently or just return users for now.
-    // In MongoDB, it's often better to do counts when needed or use aggregation.
-    const users = await UserModel.find().lean();
-    return users.map(u => ({ ...u, id: u._id.toString() }));
+    const users = await UserModel.aggregate([
+      {
+        $lookup: {
+          from: 'enrollments',
+          localField: '_id',
+          foreignField: 'user_id',
+          as: 'enrollments'
+        }
+      },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: '_id',
+          foreignField: 'instructor_id',
+          as: 'created_courses'
+        }
+      },
+      {
+        $addFields: {
+          id: { $toString: '$_id' },
+          enrollment_count: { $size: '$enrollments' },
+          created_courses_count: { $size: '$created_courses' }
+        }
+      },
+      {
+        $project: {
+          enrollments: 0,
+          created_courses: 0
+        }
+      }
+    ]);
+    return users;
   },
 
   async findByRole(role) {

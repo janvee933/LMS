@@ -133,24 +133,36 @@ const InstructorDashboard = () => {
   }, [activeTab]);
 
   return (
-    <div className="dashboard-page page-content animate-fade-in">
-      <header className="dashboard-header">
-        <div className="welcome-text">
-          <h1 className="section-title">
-            <span className="gradient-text">{user?.name}</span>
-            <span className="role-tag">{user?.role}</span>
-          </h1>
-          <p className="section-desc">Manage your content and track student progress below.</p>
+    <div className="dashboard-page page-content animate-fade-in admin-layout">
+      <aside className="admin-sidebar glass">
+        <div className="sidebar-brand">
+          <BookOpen size={28} /> Instructor Panel
         </div>
-        <div className="admin-actions" style={{ display: 'flex', gap: '10px' }}>
-          <Button variant="secondary" onClick={() => setActiveTab(activeTab === 'courses' ? 'students' : 'courses')}>
-            {activeTab === 'courses' ? 'Student Progress' : 'My Courses'}
-          </Button>
-          <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
-            {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create New Course</>}
-          </Button>
-        </div>
-      </header>
+        <nav className="sidebar-nav">
+          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
+            <BookOpen size={18} /> My Courses
+          </button>
+          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
+            <Users size={18} /> Student Progress
+          </button>
+        </nav>
+      </aside>
+
+      <main className="admin-main-content">
+        <header className="dashboard-header">
+          <div className="welcome-text">
+            <h1 className="section-title">
+              <span className="gradient-text">{user?.name}</span>
+              <span className="role-tag">{user?.role}</span>
+            </h1>
+            <p className="section-desc">Manage your content and track student progress below.</p>
+          </div>
+          <div className="admin-actions">
+            <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
+              {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create New Course</>}
+            </Button>
+          </div>
+        </header>
 
       {isCreatingCourse && (
         <CourseForm 
@@ -300,6 +312,7 @@ const InstructorDashboard = () => {
           </div>
         </section>
       )}
+      </main>
       <StudentCoursesModal 
         isOpen={isStudentModalOpen}
         onClose={() => { setIsStudentModalOpen(false); setSelectedStudent(null); }}

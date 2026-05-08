@@ -25,6 +25,9 @@ const CoursePlayer = () => {
   const [certificateData, setCertificateData] = useState(null);
   const [isCertOpen, setIsCertOpen] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
+  
+  const [lessonAnswers, setLessonAnswers] = useState({});
+  const [lessonQuizSubmitted, setLessonQuizSubmitted] = useState(false);
 
   const fetchCertificate = async () => {
     try {
@@ -57,6 +60,8 @@ const CoursePlayer = () => {
     setCurrentLesson(lesson);
     setQuizResult(null);
     setSelectedAnswers({});
+    setLessonAnswers({});
+    setLessonQuizSubmitted(false);
     
     if (lesson?.id) {
       sessionStorage.setItem(`lastLesson_${courseId}`, lesson.id);
@@ -426,6 +431,86 @@ const CoursePlayer = () => {
                   {currentLesson.content.split('\n').map((para, i) => (
                     <p key={i} style={{ marginBottom: '12px' }}>{para}</p>
                   ))}
+                </div>
+              )}
+
+              {lessonQuizzes.length > 0 && (
+                <div className="lesson-quizzes-section" style={{ marginTop: '30px', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <h3 style={{ marginBottom: '15px', color: '#6366f1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <HelpCircle size={20} /> Lesson Practice Quiz
+                  </h3>
+                  {lessonQuizzes.map((q, idx) => (
+                    <div key={q.id} className="lesson-quiz-card" style={{ marginBottom: '20px' }}>
+                      <p style={{ fontWeight: '500', marginBottom: '10px' }}>Q{idx + 1}: {q.question}</p>
+                      <div className="lesson-quiz-opts" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        {q.options.map((opt, i) => {
+                          const isSelected = lessonAnswers[q.id] === opt;
+                          const isCorrect = q.correct_answer === opt;
+                          
+                          let bg = 'rgba(255,255,255,0.05)';
+                          let border = '1px solid rgba(255,255,255,0.1)';
+                          
+                          if (lessonQuizSubmitted) {
+                            if (isCorrect) {
+                              bg = 'rgba(16, 185, 129, 0.2)';
+                              border = '1px solid #10b981';
+                            } else if (isSelected && !isCorrect) {
+                              bg = 'rgba(239, 68, 68, 0.2)';
+                              border = '1px solid #ef4444';
+                            }
+                          } else if (isSelected) {
+                            bg = 'rgba(99, 102, 241, 0.2)';
+                            border = '1px solid #6366f1';
+                          }
+
+                          return (
+                            <div 
+                              key={i} 
+                              style={{ 
+                                padding: '10px', 
+                                background: bg, 
+                                borderRadius: '8px', 
+                                border: border,
+                                cursor: lessonQuizSubmitted ? 'default' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'all 0.2s'
+                              }}
+                              onClick={() => {
+                                if (!lessonQuizSubmitted) {
+                                  setLessonAnswers({ ...lessonAnswers, [q.id]: opt });
+                                }
+                              }}
+                            >
+                              <span style={{ fontWeight: 'bold', color: '#94a3b8' }}>{String.fromCharCode(65 + i)}.</span> {opt}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    {!lessonQuizSubmitted ? (
+                      <Button 
+                        variant="primary" 
+                        onClick={() => setLessonQuizSubmitted(true)}
+                        disabled={Object.keys(lessonAnswers).length < lessonQuizzes.length}
+                      >
+                        Submit Practice Quiz
+                      </Button>
+                    ) : (
+                      <Button variant="outline" onClick={() => { setLessonQuizSubmitted(false); setLessonAnswers({}); }}>
+                        Try Again
+                      </Button>
+                    )}
+                    {lessonQuizSubmitted && (
+                      <span style={{ color: '#94a3b8', fontSize: '14px', fontWeight: '500' }}>
+                        You scored {lessonQuizzes.filter(q => lessonAnswers[q.id] === q.correct_answer).length} out of {lessonQuizzes.length}!
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

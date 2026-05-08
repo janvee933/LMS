@@ -1,0 +1,127 @@
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.payment-modal-container {
+  background: var(--glass-bg, rgba(30, 41, 59, 0.7));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-modal-container .modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  color: var(--text-muted, #94a3b8);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-modal-container .modal-close:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.payment-header h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 0.5rem;
+}
+
+.payment-header p {
+  color: var(--text-secondary, #cbd5e1);
+  font-size: 0.95rem;
+}
+
+.payment-header strong {
+  color: var(--primary-color, #6366f1);
+}
+
+.payment-details {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary, #cbd5e1);
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.payment-row:last-child {
+  margin-bottom: 0;
+}
+
+.payment-row.total {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--glass-border, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.payment-amount, .payment-total {
+  color: var(--text-primary, #ffffff);
+}
+
+.full-width-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.payment-success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.payment-success-state h2 {
+  color: #10b981;
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.payment-success-state p {
+  color: var(--text-secondary, #cbd5e1);
+}

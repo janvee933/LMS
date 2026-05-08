@@ -308,18 +308,18 @@
 }
 
 .admin-input {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-glass);
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border-glass) !important;
   border-radius: var(--radius-sm);
   padding: 12px;
-  color: white;
+  color: var(--text-main) !important;
   width: 100%;
 }
 
 .admin-input:focus {
-  border-color: var(--primary);
+  border-color: var(--primary) !important;
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-card) !important;
 }
 
 /* Fix for unreadable white text in dropdown options */
@@ -401,3 +401,91 @@
 .duplicate-user-row:hover td, .new-user-row:hover td {
   background: var(--bg-subtle);
 }
+
+/* Admin/Instructor Layout */
+.admin-layout {
+  display: flex;
+  gap: 24px;
+  min-height: calc(100vh - 100px);
+  margin-top: 24px;
+  align-items: flex-start;
+}
+
+.admin-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 24px 16px;
+  border-radius: var(--radius-md);
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-light);
+  padding: 0 8px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-nav .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-nav .nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.sidebar-nav .nav-item.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.admin-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+    position: static;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .sidebar-nav .nav-item {
+    width: auto;
+  }
+}
+

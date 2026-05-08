@@ -62,7 +62,6 @@ const Navbar = () => {
                 </div>
                 <div className="user-details">
                   <span className="user-name">{user.name}</span>
-                  <span className="user-role">{user.role}</span>
                 </div>
               </div>
 
