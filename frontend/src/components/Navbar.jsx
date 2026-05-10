@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, BookOpen, LogIn, UserPlus, LayoutDashboard, LogOut, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Menu, X, BookOpen, LogIn, UserPlus, LayoutDashboard, LogOut, Settings as SettingsIcon, Sun, Moon, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import './Navbar.css';
@@ -11,7 +11,15 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+
+  useEffect(() => {
+    const query = searchParams.get('search') || '';
+    setSearchQuery(query);
+  }, [searchParams]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +37,13 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/courses?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container">
@@ -41,6 +56,16 @@ const Navbar = () => {
         <div className="navbar-main">
           <Link to="/" className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link to="/courses" className={`navbar-link ${location.pathname === '/courses' ? 'active' : ''}`}>Courses</Link>
+          
+          <form className="navbar-search-form" onSubmit={handleSearchSubmit}>
+            <Search className="nav-search-icon" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search courses..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
         </div>
 
         {/* Action Group */}
@@ -104,6 +129,18 @@ const Navbar = () => {
           <div className="mobile-close" onClick={toggleMenu}>
             <X size={28} />
           </div>
+        </div>
+
+        <div className="mobile-search-wrapper" style={{ padding: '0 24px 10px' }}>
+          <form className="navbar-search-form" onSubmit={handleSearchSubmit} style={{ margin: 0, maxWidth: '100%' }}>
+            <Search className="nav-search-icon" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search courses..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
         </div>
 
         <div className="mobile-nav-links">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Bell, Activity, LogOut, Upload, Shield, Save, CheckCircle } from 'lucide-react';
+import { User, Lock, Bell, Activity, LogOut, Upload, Shield, Save, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
@@ -7,6 +8,7 @@ import './Settings.css';
 
 const Settings = () => {
   const { user, setUser } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -19,6 +21,19 @@ const Settings = () => {
   });
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(user?.profile_image || '');
+  const [removeImage, setRemoveImage] = useState(false);
+
+  // Sync profile data when user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      });
+      setImagePreview(user.profile_image || '');
+    }
+  }, [user]);
 
   // Password State
   const [passwordData, setPasswordData] = useState({
@@ -52,6 +67,13 @@ const Settings = () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
     
+    // Validate 10-digit phone number
+    if (profileData.phone && !/^\d{10}$/.test(profileData.phone)) {
+      setMessage({ type: 'error', text: 'Phone number must be exactly 10 digits' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('name', profileData.name);
@@ -59,6 +81,8 @@ const Settings = () => {
       formData.append('phone', profileData.phone);
       if (profileImage) {
         formData.append('profile_image', profileImage);
+      } else if (removeImage) {
+        formData.append('remove_image', 'true');
       }
 
       const res = await api.put('/users/profile', formData, {
@@ -119,10 +143,17 @@ const Settings = () => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(file);
+      setRemoveImage(false);
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage(null);
+    setImagePreview('');
+    setRemoveImage(true);
   };
 
   const handleLogoutAll = () => {
@@ -131,6 +162,12 @@ const Settings = () => {
 
   return (
     <div className="settings-page animate-fade-in">
+      <div className="back-btn-container">
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          <ArrowLeft size={18} /> Back
+        </button>
+      </div>
+
       <div className="section-header">
         <h1 className="section-title">Account <span className="gradient-text">Settings</span></h1>
         <p className="section-desc">Manage your profile, security, and preferences.</p>
@@ -174,16 +211,29 @@ const Settings = () => {
                   {imagePreview ? (
                     <img src={imagePreview} alt="Profile" className="profile-preview" />
                   ) : (
-                    <div className="avatar-placeholder">{user?.name?.charAt(0)}</div>
+                    <div className="avatar-placeholder">{user?.name?.charAt(0) || '?'}</div>
                   )}
                   <div className="upload-controls">
-                    <div className="upload-btn-wrapper">
-                      <Button variant="outline" size="sm" type="button">
-                        <Upload size={16} /> Change Photo
-                      </Button>
-                      <input type="file" accept="image/*" onChange={handleImageChange} />
+                    <div className="upload-actions">
+                      <div className="upload-btn-wrapper">
+                        <Button variant="outline" size="sm" type="button">
+                          <Upload size={16} /> Change Photo
+                        </Button>
+                        <input type="file" accept="image/*" onChange={handleImageChange} />
+                      </div>
+                      {imagePreview && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          type="button" 
+                          onClick={handleRemoveImage}
+                          style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                        >
+                          Remove
+                        </Button>
+                      )}
                     </div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px' }}>JPG, PNG or WEBP. Max 2MB.</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>JPG, PNG or WEBP. Max 2MB.</p>
                   </div>
                 </div>
 
@@ -207,8 +257,16 @@ const Settings = () => {
                   <div className="form-group">
                     <label>Phone Number</label>
                     <input 
-                      type="text" value={profileData.phone} 
-                      onChange={e => setProfileData({...profileData, phone: e.target.value})}
+                      type="text" 
+                      value={profileData.phone} 
+                      placeholder="10 digit phone number"
+                      maxLength={10}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 10) {
+                          setProfileData({...profileData, phone: val});
+                        }
+                      }}
                     />
                   </div>
                   <div className="form-group">

@@ -59,9 +59,52 @@
 .navbar-main {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-left: auto;
-  margin-right: 20px;
+  gap: 20px;
+  margin-left: 40px;
+  flex: 1;
+}
+
+.navbar-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  padding: 6px 16px;
+  border-radius: 50px;
+  width: 100%;
+  max-width: 300px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 20px;
+}
+
+.navbar-search-form:focus-within {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  max-width: 400px;
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.nav-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.navbar-search-form:focus-within .nav-search-icon {
+  color: var(--primary);
+}
+
+.navbar-search-form input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+}
+
+.navbar-search-form input::placeholder {
+  color: var(--text-dim);
 }
 
 .navbar-actions {
@@ -284,6 +327,19 @@
 @media (max-width: 1024px) {
   .navbar-main {
     gap: 16px;
+    margin-left: 20px;
+  }
+  .navbar-search-form {
+    max-width: 200px;
+  }
+  .navbar-search-form:focus-within {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 950px) {
+  .navbar-search-form {
+    display: none;
   }
 }
 

@@ -19,6 +19,7 @@ const StudentDashboard = () => {
   const [selectedCert, setSelectedCert] = useState(null);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [selectedRatingCourse, setSelectedRatingCourse] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchEnrollments = async () => {

@@ -70,3 +70,223 @@
 .skeleton-line.md { width: 80%; }
 .skeleton-line.lg { width: 100%; }
 
+/* Stats Content Section */
+.stats-content-section {
+  margin-top: var(--spacing-xl);
+  padding: 80px 40px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+  border: 1px solid var(--border-glass);
+}
+
+.stats-content-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, var(--primary-glow) 0%, transparent 50%);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stats-content-wrapper {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.stats-main-heading {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+
+.stats-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.stats-description p {
+  margin-bottom: 24px;
+  color: var(--text-muted);
+  line-height: 1.8;
+  font-size: 1.05rem;
+  opacity: 0.9;
+}
+
+.stats-grid-visual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.stat-card-premium {
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: var(--radius-md);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(10px);
+}
+
+.stat-card-premium:hover {
+  transform: translateY(-10px) scale(1.05);
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow);
+}
+
+.stat-count {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--text-main), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-name {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+@media (max-width: 1100px) {
+  .stats-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 60px;
+    text-align: center;
+  }
+  .stats-subtitle {
+    margin: 0 auto 40px;
+  }
+  .stats-main-heading {
+    font-size: 2.8rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid-visual {
+    grid-template-columns: 1fr;
+  }
+  .stat-card-premium {
+    padding: 30px 15px;
+  }
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.testimonial-card {
+  padding: 40px 32px;
+  border-radius: var(--radius-md);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-15px) rotate(1deg);
+  border-color: var(--primary);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.quote-icon {
+  font-size: 64px;
+  color: var(--primary);
+  font-family: serif;
+  line-height: 1;
+  position: absolute;
+  top: 10px;
+  right: 32px;
+  opacity: 0.2;
+}
+
+.testimonial-content p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.testimonial-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-glass);
+}
+
+.student-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+  padding: 2px;
+}
+
+.student-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.student-meta {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.star-rating {
+  display: flex;
+  gap: 4px;
+  color: #fbbf24;
+}
+
+.star {
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+  .testimonial-card {
+    padding: 32px 24px;
+  }
+}
+

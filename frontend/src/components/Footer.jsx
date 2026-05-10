@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Globe, Share2, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
@@ -16,8 +17,8 @@ const Footer = () => {
         <div className="footer-links">
           <div className="link-group">
             <h4>Platform</h4>
-            <a href="/courses">All Courses</a>
-            <a href="/dashboard">My Dashboard</a>
+            <Link to="/courses">All Courses</Link>
+            <Link to="/dashboard">My Dashboard</Link>
             <a href="#support">Support Center</a>
           </div>
           
@@ -44,9 +45,9 @@ const Footer = () => {
       <div className="footer-bottom">
         <p>&copy; {currentYear} Learnify. All rights reserved.</p>
         <div className="footer-legal">
-          <a href="#privacy">Privacy Policy</a>
+          <Link to="/privacy-policy">Privacy Policy</Link>
           <span className="dot"></span>
-          <a href="#security">Security</a>
+          <Link to="/security">Security</Link>
         </div>
       </div>
     </footer>

@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, Users, Plus, Star, BarChart } from 'lucide-react';
+import { 
+  BookOpen, Users, Plus, Star, BarChart, Activity, 
+  Search, Bell, ArrowUpRight, ArrowDownRight, RefreshCcw,
+  Clock, Layout, Settings, ExternalLink, Trash2
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import CourseCard from '../../components/CourseCard';
@@ -9,7 +13,7 @@ import Loader from '../../components/Loader';
 import api from '../../api/axios';
 import StudentCoursesModal from '../../components/StudentCoursesModal';
 import CourseContentModal from '../../components/CourseContentModal';
-import '../Dashboard.css';
+import './InstructorDashboard.css';
 
 const InstructorDashboard = () => {
   const { user } = useAuth();
@@ -23,14 +27,33 @@ const InstructorDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('instructorActiveTab') || 'courses'); // 'courses' or 'students'
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('instructorActiveTab') || 'overview');
   const [enrollments, setEnrollments] = useState([]);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedContentCourse, setSelectedContentCourse] = useState(null);
+
+  // Mock data for charts
+  const [engagementData] = useState([
+    { day: 'Mon', value: 45 },
+    { day: 'Tue', value: 72 },
+    { day: 'Wed', value: 38 },
+    { day: 'Thu', value: 85 },
+    { day: 'Fri', value: 64 },
+    { day: 'Sat', value: 92 },
+    { day: 'Sun', value: 78 },
+  ]);
+
+  const [activityLogs] = useState([
+    { id: 1, type: 'enrollment', user: 'Rahul Sharma', time: '2 mins ago', color: '#818cf8', course: 'React Mastery' },
+    { id: 2, type: 'quiz_completion', user: 'Priya Singh', time: '15 mins ago', color: '#10b981', course: 'Advanced Node.js' },
+    { id: 3, type: 'review', user: 'Sanjay Gupta', time: '1 hour ago', color: '#f59e0b', course: 'UI/UX Design' },
+    { id: 4, type: 'enrollment', user: 'Ananya Iyer', time: '3 hours ago', color: '#ec4899', course: 'React Mastery' },
+  ]);
 
   const fetchEnrollments = async () => {
     try {
@@ -49,8 +72,6 @@ const InstructorDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch stats and my courses
       const statsRes = await api.get('/courses/instructor-stats');
       if (statsRes.data.success) {
         setStats(statsRes.data.stats);
@@ -63,9 +84,18 @@ const InstructorDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    fetchDashboardData();
+    fetchEnrollments();
+  }, [user?.id]);
+
+  useEffect(() => {
+    sessionStorage.setItem('instructorActiveTab', activeTab);
+  }, [activeTab]);
+
   const handleEditCourse = (course) => {
     setEditingCourse(course);
-    setIsCreatingCourse(true); // Re-use the form container
+    setIsCreatingCourse(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -77,7 +107,6 @@ const InstructorDashboard = () => {
     try {
       const res = await api.delete(`/courses/${course.id}`);
       if (res.data.success) {
-        alert('Course deleted successfully');
         fetchDashboardData();
       }
     } catch (error) {
@@ -105,14 +134,10 @@ const InstructorDashboard = () => {
       if (res.data.success) {
         alert('Extra attempt granted successfully');
         await fetchEnrollments();
-        
-        // Also update the selectedStudent if modal is open to reflect changes immediately
         if (selectedStudent) {
           const updatedEnrollments = await api.get('/enrollments/instructor/all');
           const newStudentData = updatedEnrollments.data.data.find(s => s.student_email === selectedStudent.student_email);
-          if (newStudentData) {
-            setSelectedStudent(newStudentData);
-          }
+          if (newStudentData) setSelectedStudent(newStudentData);
         }
       }
     } catch (error) {
@@ -123,114 +148,231 @@ const InstructorDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDashboardData();
-    fetchEnrollments();
-  }, [user?.id]);
+  const filteredCourses = useMemo(() => {
+    return myCourses.filter(c => 
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.category?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [myCourses, searchQuery]);
 
-  useEffect(() => {
-    sessionStorage.setItem('instructorActiveTab', activeTab);
-  }, [activeTab]);
+  if (loading) return <Loader fullPage message="Initializing Instructor Dashboard..." />;
 
   return (
-    <div className="dashboard-page page-content animate-fade-in admin-layout">
-      <aside className="admin-sidebar glass">
-        <div className="sidebar-brand">
-          <BookOpen size={28} /> Instructor Panel
+    <div className="instructor-dashboard-container">
+      {/* Premium Sidebar */}
+      <aside className="instructor-sidebar-premium">
+        <div className="sidebar-logo">
+          <BookOpen size={32} />
+          <span>Instructor Panel</span>
         </div>
-        <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
-            <BookOpen size={18} /> My Courses
+        
+        <nav className="sidebar-nav-premium">
+          <button 
+            className={`nav-item-premium ${activeTab === 'overview' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('overview')}
+          >
+            <div className="icon-wrapper"><Activity size={18} /></div>
+            <span>Monitoring</span>
           </button>
-          <button className={`nav-item ${activeTab === 'students' ? 'active' : ''}`} onClick={() => setActiveTab('students')}>
-            <Users size={18} /> Student Progress
+          <button 
+            className={`nav-item-premium ${activeTab === 'courses' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('courses')}
+          >
+            <div className="icon-wrapper"><Layout size={18} /></div>
+            <span>My Courses</span>
+          </button>
+          <button 
+            className={`nav-item-premium ${activeTab === 'students' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('students')}
+          >
+            <div className="icon-wrapper"><Users size={18} /></div>
+            <span>Students</span>
+          </button>
+          <button 
+            className={`nav-item-premium ${activeTab === 'settings' ? 'active' : ''}`} 
+            onClick={() => navigate('/settings')}
+          >
+            <div className="icon-wrapper"><Settings size={18} /></div>
+            <span>Settings</span>
           </button>
         </nav>
+
+        <div className="sidebar-footer">
+          <div className="user-profile-compact">
+            <div className="avatar-circle">{user?.name?.charAt(0)}</div>
+            <div className="user-info-text">
+              <h4>{user?.name}</h4>
+              <p>Course Instructor</p>
+            </div>
+          </div>
+        </div>
       </aside>
 
-      <main className="admin-main-content">
-        <header className="dashboard-header">
-          <div className="welcome-text">
-            <h1 className="section-title">
-              <span className="gradient-text">{user?.name}</span>
-              <span className="role-tag">{user?.role}</span>
-            </h1>
-            <p className="section-desc">Manage your content and track student progress below.</p>
+      {/* Main Content Area */}
+      <main className="instructor-content-premium">
+        <header className="instructor-header-premium">
+          <div className="header-title-area">
+            <h1>{activeTab === 'overview' ? 'Monitoring' : activeTab === 'courses' ? 'My Courses' : 'Student Management'}</h1>
+            <p>Welcome back, {user?.name}. Here's your teaching summary.</p>
           </div>
-          <div className="admin-actions">
-            <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
-              {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create New Course</>}
+          
+          <div className="header-actions">
+            <div className="search-wrapper-premium">
+              <Search className="search-icon" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search courses..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button className="nav-item-premium" style={{ padding: '10px' }}>
+              <Bell size={20} />
+            </button>
+            <Button variant="primary" onClick={() => setIsCreatingCourse(true)}>
+              <Plus size={18} /> Create Course
             </Button>
           </div>
         </header>
 
-      {isCreatingCourse && (
-        <CourseForm 
-          key={editingCourse?.id || 'new'}
-          defaultInstructorId={user.id} 
-          initialData={editingCourse}
-          onSuccess={() => { 
-            setIsCreatingCourse(false); 
-            setEditingCourse(null);
-            fetchDashboardData(); 
-          }}
-          onCancel={() => {
-            setIsCreatingCourse(false);
-            setEditingCourse(null);
-          }}
-        />
-      )}
+        {isCreatingCourse && (
+          <div className="animate-slide-up" style={{ marginBottom: '2rem' }}>
+            <CourseForm 
+              key={editingCourse?.id || 'new'}
+              defaultInstructorId={user.id} 
+              initialData={editingCourse}
+              onSuccess={() => { 
+                setIsCreatingCourse(false); 
+                setEditingCourse(null);
+                fetchDashboardData(); 
+              }}
+              onCancel={() => {
+                setIsCreatingCourse(false);
+                setEditingCourse(null);
+              }}
+            />
+          </div>
+        )}
 
-      <div className="stats-grid">
-        <div className="stat-card glass">
-          <div className="stat-icon purple">
-            <BookOpen size={24} />
-          </div>
-          <div className="stat-info">
-            <h3>{stats.totalCourses}</h3>
-            <p>Total Courses</p>
-          </div>
-        </div>
-        <div className="stat-card glass">
-          <div className="stat-icon blue">
-            <Users size={24} />
-          </div>
-          <div className="stat-info">
-            <h3>{stats.activeStudents}</h3>
-            <p>Active Students</p>
-          </div>
-        </div>
-        <div className="stat-card glass">
-          <div className="stat-icon orange">
-            <Star size={24} />
-          </div>
-          <div className="stat-info">
-            <h3>{stats.avgRating}</h3>
-            <p>Avg. Rating</p>
-          </div>
-        </div>
-        <div className="stat-card glass">
-          <div className="stat-icon green">
-            <BarChart size={24} />
-          </div>
-          <div className="stat-info">
-            <h3>₹{stats.totalRevenue.toLocaleString()}</h3>
-            <p>Total Revenue</p>
-          </div>
-        </div>
-      </div>
+        {activeTab === 'overview' && (
+          <div className="animate-fade-in">
+            {/* Stats Grid */}
+            <div className="premium-stats-grid">
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8' }}>
+                    <BookOpen size={24} />
+                  </div>
+                  <div className="stat-trend up">
+                    <ArrowUpRight size={14} /> 12%
+                  </div>
+                </div>
+                <div className="stat-value">{stats.totalCourses}</div>
+                <div className="stat-label">Total Courses</div>
+              </div>
+              
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                    <Users size={24} />
+                  </div>
+                  <div className="stat-trend up">
+                    <ArrowUpRight size={14} /> 8%
+                  </div>
+                </div>
+                <div className="stat-value">{stats.activeStudents}</div>
+                <div className="stat-label">Active Students</div>
+              </div>
 
-      {activeTab === 'courses' ? (
-        <section className="dashboard-section">
-          <div className="section-header-inline">
-            <h2 className="section-subtitle">Manage <span className="gradient-text">Your Courses</span></h2>
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                    <Star size={24} />
+                  </div>
+                  <div className="stat-trend up">
+                    <ArrowUpRight size={14} /> 0.2
+                  </div>
+                </div>
+                <div className="stat-value">{stats.avgRating}</div>
+                <div className="stat-label">Avg. Rating</div>
+              </div>
+
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+                    <BarChart size={24} />
+                  </div>
+                  <div className="status-badge online">
+                    <div className="status-dot"></div> Active
+                  </div>
+                </div>
+                <div className="stat-value">₹{stats.totalRevenue.toLocaleString()}</div>
+                <div className="stat-label">Total Revenue</div>
+              </div>
+            </div>
+
+            {/* Monitoring Section */}
+            <div className="monitoring-grid">
+              <div className="premium-section-card">
+                <div className="section-header">
+                  <h2>Student Engagement</h2>
+                  <div className="status-badge online">Weekly View</div>
+                </div>
+                <div className="chart-container-mock">
+                  {engagementData.map((d, i) => (
+                    <div key={i} className="bar-wrapper">
+                      <div 
+                        className="bar-fill" 
+                        style={{ height: `${d.value}%` }}
+                        data-value={d.value}
+                      ></div>
+                      <span className="bar-label">{d.day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="premium-section-card">
+                <div className="section-header">
+                  <h2>Recent Activity</h2>
+                  <RefreshCcw 
+                    size={16} 
+                    className={refreshing ? 'animate-spin' : ''} 
+                    onClick={fetchDashboardData}
+                    style={{ cursor: 'pointer', color: '#64748b' }}
+                  />
+                </div>
+                <div className="activity-list">
+                  {activityLogs.map(log => (
+                    <div key={log.id} className="activity-item">
+                      <div className="activity-point" style={{ background: log.color }}></div>
+                      <div className="activity-content">
+                        <div className="activity-title">
+                          {log.user} 
+                          <span style={{ fontWeight: 400, color: '#64748b' }}> 
+                            {log.type === 'enrollment' ? 'enrolled in' : log.type === 'quiz_completion' ? 'completed quiz in' : 'left a review for'} 
+                          </span> 
+                          {log.course}
+                        </div>
+                        <div className="activity-time">{log.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          
-          {loading ? (
-            <Loader fullPage={false} message="Loading your courses..." />
-          ) : myCourses.length > 0 ? (
-            <div className="courses-grid">
-              {myCourses.map(course => (
+        )}
+
+        {activeTab === 'courses' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>My Course Portfolio</h2>
+              <p style={{ color: 'var(--text-muted)' }}>{filteredCourses.length} courses published</p>
+            </div>
+            
+            <div className="courses-premium-grid">
+              {filteredCourses.length > 0 ? filteredCourses.map(course => (
                 <CourseCard 
                   key={course.id} 
                   course={course} 
@@ -238,81 +380,81 @@ const InstructorDashboard = () => {
                   onManageContent={handleManageContent}
                   onDelete={handleDeleteCourse}
                 />
-              ))}
+              )) : (
+                <div className="premium-section-card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
+                  <BookOpen size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
+                  <h3>No courses found</h3>
+                  <p>Start sharing your knowledge by creating your first course.</p>
+                  <Button variant="primary" style={{ marginTop: '1.5rem' }} onClick={() => setIsCreatingCourse(true)}>Create Course</Button>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="empty-state glass">
-              <p>You haven't created any courses yet. Start sharing your knowledge!</p>
-              <Button variant="secondary" onClick={() => alert('Create course panel coming soon!')}>Create Your First Course</Button>
-            </div>
-          )}
-        </section>
-      ) : (
-        <section className="dashboard-section enrollments-section animate-fade-in">
-          <div className="section-header-inline">
-            <h2 className="section-subtitle">Student <span className="gradient-text">Progress Tracking</span></h2>
-            <Button variant="secondary" onClick={() => fetchEnrollments()} disabled={refreshing}>
-               {refreshing ? 'Refreshing...' : 'Refresh Data'}
-            </Button>
           </div>
+        )}
 
-          <div className="users-table-container glass">
-            {loading ? (
-              <div className="loading-spinner">Loading tracking data...</div>
-            ) : (
-              <table className="admin-table">
+        {activeTab === 'students' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>Student Progress Tracking</h2>
+              <Button variant="secondary" onClick={fetchEnrollments} disabled={refreshing}>
+                <RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /> Refresh
+              </Button>
+            </div>
+
+            <div className="premium-table-container">
+              <table className="premium-table">
                 <thead>
                   <tr>
                     <th>Student</th>
-                    <th>Courses Enrolled</th>
-                    <th>Overall Progress</th>
+                    <th>Courses</th>
+                    <th>Average Progress</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enrollments.length > 0 ? enrollments.map(s => (
+                  {enrollments.length > 0 ? enrollments.map((s) => (
                     <tr key={s.student_email}>
                       <td>
-                        <div className="user-info-cell">
-                          <span className="user-name">{s.student_name}</span>
-                          <span className="user-email">{s.student_email}</span>
+                        <div className="user-cell">
+                          <div className="user-avatar-small">{s.student_name.charAt(0)}</div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'white' }}>{s.student_name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{s.student_email}</div>
+                          </div>
                         </div>
                       </td>
                       <td>
-                        <div className="enrollment-count-badge" style={{ cursor: 'pointer', display: 'inline-block' }} onClick={() => handleViewStudentCourses(s)}>
+                        <div className="enrollment-count-badge" onClick={() => handleViewStudentCourses(s)} style={{ cursor: 'pointer' }}>
                           {s.courses_count} {s.courses_count === 1 ? 'Course' : 'Courses'}
                         </div>
                       </td>
                       <td>
                         <div className="progress-cell">
-                          <div className="progress-bar-container" style={{ width: '100px' }}>
-                            <div className={`progress-bar-fill ${s.avg_progress === 100 ? 'completed' : ''}`} style={{ width: `${s.avg_progress}%` }}></div>
+                          <div className="progress-bar-container" style={{ width: '120px', background: 'rgba(255,255,255,0.05)' }}>
+                            <div className="progress-bar-fill" style={{ width: `${s.avg_progress}%`, background: s.avg_progress === 100 ? '#10b981' : 'var(--gradient-primary)' }}></div>
                           </div>
-                          <span className="progress-percent" style={{ color: s.avg_progress === 100 ? '#10b981' : 'inherit' }}>{s.avg_progress}%</span>
+                          <span style={{ fontWeight: 700, color: s.avg_progress === 100 ? '#10b981' : 'white' }}>{s.avg_progress}%</span>
                         </div>
                       </td>
                       <td>
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => handleViewStudentCourses(s)}
-                        >
-                          View Progress
-                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => handleViewStudentCourses(s)}>View Details</Button>
                       </td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan="3" style={{ textAlign: 'center', padding: '30px' }}>No student enrollment data found for your courses.</td>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '3rem' }}>
+                        No students enrolled in your courses yet.
+                      </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
-        </section>
-      )}
+        )}
       </main>
+
+      {/* Modals */}
       <StudentCoursesModal 
         isOpen={isStudentModalOpen}
         onClose={() => { setIsStudentModalOpen(false); setSelectedStudent(null); }}

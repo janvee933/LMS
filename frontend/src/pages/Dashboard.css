@@ -58,6 +58,36 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 20px;
+}
+
+.search-box-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  flex: 1;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+}
+
+.search-box-dashboard .search-icon {
+  color: var(--text-dim);
+}
+
+.search-box-dashboard input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+}
+
+.search-box-dashboard input::placeholder {
+  color: var(--text-dim);
 }
 
 .section-subtitle {

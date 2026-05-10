@@ -13,7 +13,10 @@ import InstructorDashboard from './pages/dashboards/InstructorDashboard';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
 import Settings from './pages/Settings';
 import CoursePlayer from './pages/CoursePlayer';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Security from './pages/Security';
 import Loader from './components/Loader';
+import ScrollToTop from './components/ScrollToTop';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -28,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
 // Role-based Route Component
 const RoleRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader message="Setting up your experience..." />;
   if (!user) return <Navigate to="/login" />;
   if (!allowedRoles.includes(user.role)) return <Navigate to="/dashboard" />;
   return children;
@@ -43,6 +46,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="app-container">
         <Navbar />
         <main className="main-content">
@@ -52,6 +56,8 @@ function App() {
             <Route path="/login" element={<AuthForm type="login" />} />
             <Route path="/signup" element={<AuthForm type="signup" />} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/security" element={<Security />} />
             
             {/* Generic Dashboard Redirector */}
             <Route 

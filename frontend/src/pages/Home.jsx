@@ -163,6 +163,103 @@ const Home = () => {
         </div>
       </section>
 
+      <section className="stats-content-section page-content animate-fade-in">
+        <div className="stats-content-wrapper">
+          <div className="stats-text-content">
+            <h2 className="stats-main-heading">Empowering Futures Through <span className="gradient-text">Quality Education</span></h2>
+            <p className="stats-subtitle">Trusted by thousands of learners worldwide to bridge the gap between ambition and success.</p>
+            
+            <div className="stats-description">
+              <p>
+                At our platform, we believe that education is the foundation of progress. By combining industry-leading expertise with a flexible learning environment, we empower students to master in-demand skills at their own pace. Our mission is to provide accessible, high-quality education that transforms careers and opens new doors of opportunity in an ever-evolving global market.
+              </p>
+              <p>
+                Our success is reflected in the growth of our community. With a curriculum curated by seasoned professionals, we ensure that every learner receives practical, real-world knowledge. Whether you are looking to start a new career or level up your current skills, our comprehensive resources and dedicated mentorship are designed to guide you every step of the way toward achieving your professional goals.
+              </p>
+            </div>
+          </div>
+          
+          <div className="stats-grid-visual">
+            <div className="stat-card-premium glass">
+              <h3 className="stat-count">10,000+</h3>
+              <p className="stat-name">Total Students</p>
+            </div>
+            <div className="stat-card-premium glass">
+              <h3 className="stat-count">250+</h3>
+              <p className="stat-name">Courses</p>
+            </div>
+            <div className="stat-card-premium glass">
+              <h3 className="stat-count">50+</h3>
+              <p className="stat-name">Expert Teachers</p>
+            </div>
+            <div className="stat-card-premium glass">
+              <h3 className="stat-count">5,000+</h3>
+              <p className="stat-name">Certificates Issued</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="testimonials-section page-content animate-fade-in">
+        <div className="section-header">
+          <h2 className="section-title">What Our <span className="gradient-text">Students Say</span></h2>
+          <p className="section-desc">Hear from our community of learners who have transformed their careers through our platform.</p>
+        </div>
+
+        <div className="testimonials-grid">
+          <div className="testimonial-card glass animate-slide-up">
+            <div className="quote-icon">"</div>
+            <div className="testimonial-content">
+              <p>The Python Data Science course was a game-changer for me. The instructors break down complex concepts into simple steps. I landed my first Junior Data Analyst role within two months of completing the certification!</p>
+            </div>
+            <div className="testimonial-footer">
+              <img src="https://i.pravatar.cc/150?u=rahul" alt="Rahul Sharma" className="student-photo" />
+              <div className="student-info">
+                <h4 className="student-name">Rahul Sharma</h4>
+                <p className="student-meta">Data Analyst @ TechCorp</p>
+                <div className="star-rating">
+                  {[1, 2, 3, 4, 5].map(s => <span key={s} className="star">★</span>)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="testimonial-card glass animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="quote-icon">"</div>
+            <div className="testimonial-content">
+              <p>I loved the flexibility of the self-paced learning. The Full Stack Web Development bootcamp is incredibly comprehensive. The community support and real-world projects helped me build a portfolio I'm proud of.</p>
+            </div>
+            <div className="testimonial-footer">
+              <img src="https://i.pravatar.cc/150?u=priya" alt="Priya Singh" className="student-photo" />
+              <div className="student-info">
+                <h4 className="student-name">Priya Singh</h4>
+                <p className="student-meta">Frontend Developer</p>
+                <div className="star-rating">
+                  {[1, 2, 3, 4, 5].map(s => <span key={s} className="star">★</span>)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="testimonial-card glass animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="quote-icon">"</div>
+            <div className="testimonial-content">
+              <p>The instructors here are truly experts in their fields. Their hands-on approach and constant feedback made even the most difficult modules manageable. This platform is worth every penny for professional growth.</p>
+            </div>
+            <div className="testimonial-footer">
+              <img src="https://i.pravatar.cc/150?u=amit" alt="Amit Kumar" className="student-photo" />
+              <div className="student-info">
+                <h4 className="student-name">Amit Kumar</h4>
+                <p className="student-meta">Senior Software Engineer</p>
+                <div className="star-rating">
+                  {[1, 2, 3, 4, 5].map(s => <span key={s} className="star">★</span>)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {isEditModalOpen && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, overflowY: 'auto', padding: '40px 20px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>

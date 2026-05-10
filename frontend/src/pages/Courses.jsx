@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Filter, BookOpen } from 'lucide-react';
 import api from '../api/axios';
 import CourseCard from '../components/CourseCard';
 import CourseStudentsModal from '../components/CourseStudentsModal';
@@ -14,10 +15,12 @@ import './Courses.css';
 const Courses = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState(() => sessionStorage.getItem('coursesActiveFilter') || 'All');
   const [isStudentsModalOpen, setIsStudentsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -45,7 +48,9 @@ const Courses = () => {
 
       // Apply initial filter
       const savedFilter = sessionStorage.getItem('coursesActiveFilter') || 'All';
-      applyFilter(savedFilter, coursesData);
+      const urlSearch = searchParams.get('search') || '';
+      if (urlSearch) setSearchQuery(urlSearch);
+      applyFilters(savedFilter, urlSearch || searchQuery, coursesData);
     } catch (error) {
       console.error('Error fetching data', error);
       setCourses([]);
@@ -56,24 +61,41 @@ const Courses = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [user]);
-
-  const applyFilter = (category, allCourses) => {
-    if (category === 'All') {
-      setFilteredCourses(allCourses);
-    } else {
-      const filtered = allCourses.filter(course => 
-        course.category === category
-      );
-      setFilteredCourses(filtered);
+    const urlSearch = searchParams.get('search') || '';
+    if (urlSearch !== searchQuery) {
+      setSearchQuery(urlSearch);
     }
+    fetchData();
+  }, [user, searchParams]);
+
+  const applyFilters = (category, query, allCourses) => {
+    let filtered = allCourses;
+    
+    if (category !== 'All') {
+      filtered = filtered.filter(course => course.category === category);
+    }
+    
+    if (query.trim() !== '') {
+      const q = query.toLowerCase();
+      filtered = filtered.filter(course => 
+        course.title.toLowerCase().includes(q) || 
+        course.description?.toLowerCase().includes(q)
+      );
+    }
+    
+    setFilteredCourses(filtered);
   };
 
   const handleFilter = (category) => {
     setActiveFilter(category);
     sessionStorage.setItem('coursesActiveFilter', category);
-    applyFilter(category, courses);
+    applyFilters(category, searchQuery, courses);
+  };
+
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    applyFilters(activeFilter, query, courses);
   };
 
   const handleViewStudents = (course) => {
@@ -151,16 +173,18 @@ const Courses = () => {
         <p className="section-desc">Browse our curated collection of industry-leading courses.</p>
       </div>
 
-      <div className="courses-filters glass">
-        {['All', 'Computer Science', 'Data Science', 'Information Technology', 'Personal Development'].map(cat => (
-          <button 
-            key={cat}
-            className={`filter-btn ${activeFilter === cat ? 'active' : ''}`}
-            onClick={() => handleFilter(cat)}
-          >
-            {cat}
-          </button>
-        ))}
+      <div className="courses-toolbar animate-fade-in">
+        <div className="courses-filters glass">
+          {['All', 'Computer Science', 'Data Science', 'Information Technology', 'Personal Development'].map(cat => (
+            <button 
+              key={cat}
+              className={`filter-btn ${activeFilter === cat ? 'active' : ''}`}
+              onClick={() => handleFilter(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -182,9 +206,12 @@ const Courses = () => {
             ))
           ) : (
             <div className="no-results glass animate-fade-in">
-              <h3>No courses found in this category.</h3>
+              <h3>No courses found matching your search or category.</h3>
               <p>Try searching for something else or browse all courses.</p>
-              <button className="filter-btn active" onClick={() => handleFilter('All')}>Show All Courses</button>
+              <button className="filter-btn active" onClick={() => {
+                setSearchQuery('');
+                handleFilter('All');
+              }}>Show All Courses</button>
             </div>
           )}
         </div>

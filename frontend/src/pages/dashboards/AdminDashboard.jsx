@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Layout, Users, BookOpen, ShieldCheck, Settings, Plus, Award, Star } from 'lucide-react';
+import { 
+  Layout, Users, BookOpen, ShieldCheck, Settings, Plus, 
+  Award, Star, Search, Bell, Activity, ArrowUpRight, 
+  ArrowDownRight, Trash2, ExternalLink, RefreshCcw,
+  MoreVertical, CheckCircle2, Clock
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import CourseForm from '../../components/CourseForm';
@@ -8,7 +13,7 @@ import Loader from '../../components/Loader';
 import api from '../../api/axios';
 import StudentCoursesModal from '../../components/StudentCoursesModal';
 import InstructorCoursesModal from '../../components/InstructorCoursesModal';
-import '../Dashboard.css';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -22,10 +27,11 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('adminActiveTab') || 'overview'); // 'overview', 'users', 'instructors', or 'enrollments'
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('adminActiveTab') || 'overview'); 
   const [enrollments, setEnrollments] = useState([]);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newUserData, setNewUserData] = useState({
     name: '',
     email: '',
@@ -40,6 +46,24 @@ const AdminDashboard = () => {
   const [selectedInstructorCourses, setSelectedInstructorCourses] = useState([]);
   const [selectedInstructorName, setSelectedInstructorName] = useState('');
 
+  // Mock data for monitoring
+  const [activityLogs] = useState([
+    { id: 1, type: 'registration', user: 'Rahul Sharma', time: '2 mins ago', color: '#818cf8' },
+    { id: 2, type: 'enrollment', user: 'Priya Singh', time: '15 mins ago', color: '#10b981' },
+    { id: 3, type: 'course_creation', user: 'Dr. Amit Kumar', time: '1 hour ago', color: '#f59e0b' },
+    { id: 4, type: 'completion', user: 'Sanjay Gupta', time: '3 hours ago', color: '#ec4899' },
+  ]);
+
+  const [revenueData] = useState([
+    { day: 'Mon', value: 65 },
+    { day: 'Tue', value: 85 },
+    { day: 'Wed', value: 45 },
+    { day: 'Thu', value: 95 },
+    { day: 'Fri', value: 75 },
+    { day: 'Sat', value: 55 },
+    { day: 'Sun', value: 90 },
+  ]);
+
   const fetchEnrollments = async () => {
     try {
       setRefreshing(true);
@@ -49,7 +73,6 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching enrollments', error);
-      window.alert(`Admin Tracking API Error: ${error.response?.data?.message || error.message}`);
     } finally {
       setRefreshing(false);
     }
@@ -64,9 +87,6 @@ const AdminDashboard = () => {
       const allUsers = usersRes.data?.users || [];
       const students = allUsers.filter(u => u.role === 'student');
       const instructors = allUsers.filter(u => u.role === 'instructor');
-
-      console.log('Admin Data Fetched:', { usersCount: allUsers.length, coursesCount: (coursesRes.data?.data || []).length });
-      console.log('Full User List:', allUsers);
 
       const coursesData = coursesRes.data?.data || [];
       setAllCourses(coursesData);
@@ -84,6 +104,53 @@ const AdminDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAdminData();
+    fetchEnrollments();
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => 
+      u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [users, searchQuery]);
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (window.confirm(`Are you sure you want to delete user ${userName}?`)) {
+      try {
+        const res = await api.delete(`/auth/users/${userId}`);
+        if (res.data.success) {
+          fetchAdminData();
+        }
+      } catch (error) {
+        alert(error.response?.data?.message || 'Failed to delete user');
+      }
+    }
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (newUserData.phone.length !== 10) {
+      alert('Mobile number must be exactly 10 digits');
+      return;
+    }
+    try {
+      const res = await api.post('/auth/users', newUserData);
+      if (res.data.success) {
+        setIsCreatingUser(false);
+        setNewUserData({ name: '', email: '', password: '', phone: '', role: 'student' });
+        fetchAdminData();
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to create user');
+    }
+  };
+
   const handleViewStudentCourses = (student) => {
     setSelectedStudent(student);
     setIsStudentModalOpen(true);
@@ -96,410 +163,374 @@ const AdminDashboard = () => {
     setIsInstructorModalOpen(true);
   };
 
-  useEffect(() => {
-    fetchAdminData();
-    fetchEnrollments();
-  }, []);
-
-  useEffect(() => {
-    sessionStorage.setItem('adminActiveTab', activeTab);
-  }, [activeTab]);
-
-  const handleDeleteUser = async (userId, userName) => {
-    if (window.confirm(`Are you sure you want to delete user ${userName}?`)) {
-      try {
-        const res = await api.delete(`/auth/users/${userId}`);
-        if (res.data.success) {
-          alert('User deleted successfully');
-          fetchAdminData();
-        }
-      } catch (error) {
-        alert(error.response?.data?.message || 'Failed to delete user');
-      }
-    }
-  };
-
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    
-    // Validate Phone Length
-    if (newUserData.phone.length !== 10) {
-      alert('Mobile number must be exactly 10 digits');
-      return;
-    }
-
-    try {
-      const res = await api.post('/auth/users', newUserData);
-      if (res.data.success) {
-        alert(`User ${newUserData.name} created successfully!`);
-        setIsCreatingUser(false);
-        setNewUserData({ name: '', email: '', password: '', phone: '', role: 'student' });
-        fetchAdminData();
-      }
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to create user');
-    }
-  };
+  if (loading) return <Loader fullPage message="Initializing Admin Panel..." />;
 
   return (
-    <div className="dashboard-page page-content animate-fade-in admin-layout">
-      <aside className="admin-sidebar glass">
-        <div className="sidebar-brand">
-          <ShieldCheck size={28} /> Admin Panel
+    <div className="admin-dashboard-container">
+      {/* Premium Sidebar */}
+      <aside className="admin-sidebar-premium">
+        <div className="sidebar-logo">
+          <ShieldCheck size={32} />
+          <span>Antigravity LMS</span>
         </div>
-        <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
-            <Layout size={18} /> Overview
+        
+        <nav className="sidebar-nav-premium">
+          <button 
+            className={`nav-item-premium ${activeTab === 'overview' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('overview')}
+          >
+            <div className="icon-wrapper"><Activity size={18} /></div>
+            <span>Monitoring</span>
           </button>
-          <button className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-            <Users size={18} /> Students
+          <button 
+            className={`nav-item-premium ${activeTab === 'users' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('users')}
+          >
+            <div className="icon-wrapper"><Users size={18} /></div>
+            <span>Students</span>
           </button>
-          <button className={`nav-item ${activeTab === 'instructors' ? 'active' : ''}`} onClick={() => setActiveTab('instructors')}>
-            <Award size={18} /> Instructors
+          <button 
+            className={`nav-item-premium ${activeTab === 'instructors' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('instructors')}
+          >
+            <div className="icon-wrapper"><Award size={18} /></div>
+            <span>Instructors</span>
           </button>
-          <button className={`nav-item ${activeTab === 'enrollments' ? 'active' : ''}`} onClick={() => setActiveTab('enrollments')}>
-            <BookOpen size={18} /> Progress Tracking
+          <button 
+            className={`nav-item-premium ${activeTab === 'enrollments' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('enrollments')}
+          >
+            <div className="icon-wrapper"><Clock size={18} /></div>
+            <span>Progress Tracking</span>
           </button>
         </nav>
+
+        <div className="sidebar-footer">
+          <div className="user-profile-compact">
+            <div className="avatar-circle">{user?.name?.charAt(0)}</div>
+            <div className="user-info-text">
+              <h4>{user?.name}</h4>
+              <p>System Administrator</p>
+            </div>
+          </div>
+        </div>
       </aside>
 
-      <main className="admin-main-content">
-        <header className="dashboard-header">
-          <div className="welcome-text">
-            <h1 className="section-title">
-              <span className="gradient-text">{user?.name}</span>
-              <span className="role-tag">{user?.role}</span>
-            </h1>
-            <p className="section-desc">Global platform overview and system management.</p>
+      {/* Main Content Area */}
+      <main className="admin-content-premium">
+        <header className="admin-header-premium">
+          <div className="header-title-area">
+            <h1>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
+            <p>Welcome back, {user?.name}. Here's what's happening today.</p>
           </div>
-          <div className="admin-actions">
-            <Button variant="primary" onClick={() => setIsCreatingCourse(!isCreatingCourse)}>
-              {isCreatingCourse ? 'Cancel' : <><Plus size={18} /> Create Course</>}
+          
+          <div className="header-actions">
+            <div className="search-wrapper-premium">
+              <Search className="search-icon" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search anything..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button className="nav-item-premium" style={{ padding: '10px' }}>
+              <Bell size={20} />
+            </button>
+            <Button variant="primary" onClick={() => setIsCreatingCourse(true)}>
+              <Plus size={18} /> Create Course
             </Button>
           </div>
         </header>
 
-      {isCreatingCourse && (
-        <CourseForm 
-          defaultInstructorId={user.id} 
-          onSuccess={() => { setIsCreatingCourse(false); fetchAdminData(); }}
-          onCancel={() => setIsCreatingCourse(false)}
-        />
-      )}
-
-      {activeTab === 'overview' ? (
-        <>
-          <div className="stats-grid">
-            <div className="stat-card glass">
-              <div className="stat-icon purple">
-                <BookOpen size={24} />
-              </div>
-              <div className="stat-info">
-                <h3>{stats.courses}</h3>
-                <p>Total Courses</p>
-              </div>
-            </div>
-            <div className="stat-card glass">
-              <div className="stat-icon blue">
-                <Users size={24} />
-              </div>
-              <div className="stat-info">
-                <h3>{stats.users}</h3>
-                <p>Total Users</p>
-              </div>
-            </div>
-            <div className="stat-card glass" onClick={() => setActiveTab('instructors')} style={{ cursor: 'pointer' }}>
-              <div className="stat-icon orange">
-                <Award size={24} />
-              </div>
-              <div className="stat-info">
-                <h3>{stats.instructors}</h3>
-                <p>Instructors</p>
-              </div>
-            </div>
-            <div className="stat-card glass">
-              <div className="stat-icon green">
-                <ShieldCheck size={24} />
-              </div>
-              <div className="stat-info">
-                <h3>{stats.students}</h3>
-                <p>Active Students</p>
-              </div>
-            </div>
+        {isCreatingCourse && (
+          <div className="animate-slide-up" style={{ marginBottom: '2rem' }}>
+            <CourseForm 
+              defaultInstructorId={user.id} 
+              onSuccess={() => { setIsCreatingCourse(false); fetchAdminData(); }}
+              onCancel={() => setIsCreatingCourse(false)}
+            />
           </div>
+        )}
 
-          <section className="dashboard-section">
-            <h2 className="section-subtitle">Platform <span className="gradient-text">Management</span></h2>
-            <div className="admin-grid">
-              <div className="admin-card glass" onClick={() => setActiveTab('enrollments')}>
-                <h3>Student Progress</h3>
-                <p>Track enrollments and learning progress across courses.</p>
-              </div>
-            </div>
-          </section>
-        </>
-      ) : activeTab === 'users' ? (
-        <section className="dashboard-section users-section animate-fade-in">
-          <div className="section-header-inline">
-            <h2 className="section-subtitle">User <span className="gradient-text">Management</span></h2>
-            <Button variant="primary" onClick={() => setIsCreatingUser(!isCreatingUser)}>
-              {isCreatingUser ? 'Cancel' : 'Add New User'}
-            </Button>
-          </div>
-
-          {isCreatingUser && (
-            <div className="create-user-form glass animate-slide-up" style={{ marginBottom: '30px', padding: '20px' }}>
-              <form onSubmit={handleCreateUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                <input 
-                  type="text" placeholder="Name" required 
-                  autoComplete="name"
-                  value={newUserData.name} onChange={e => setNewUserData({...newUserData, name: e.target.value})}
-                  className="admin-input"
-                />
-                <input 
-                  type="email" placeholder="Email" required 
-                  autoComplete="email"
-                  value={newUserData.email} onChange={e => setNewUserData({...newUserData, email: e.target.value})}
-                  className="admin-input"
-                />
-                <input 
-                  type="tel" placeholder="Phone (10 digits)" required 
-                  maxLength={10}
-                  autoComplete="tel"
-                  value={newUserData.phone} 
-                  onChange={e => {
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setNewUserData({...newUserData, phone: val});
-                  }}
-                  className="admin-input"
-                />
-                <input 
-                  type="password" placeholder="Password" required 
-                  autoComplete="new-password"
-                  value={newUserData.password} onChange={e => setNewUserData({...newUserData, password: e.target.value})}
-                  className="admin-input"
-                />
-                <select 
-                  value={newUserData.role} onChange={e => setNewUserData({...newUserData, role: e.target.value})}
-                  className="admin-input"
-                >
-                  <option value="student">Student</option>
-                  <option value="instructor">Instructor</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <Button type="submit" variant="primary">Create User</Button>
+        {activeTab === 'overview' && (
+          <div className="animate-fade-in">
+            {/* Stats Grid */}
+            <div className="premium-stats-grid">
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#818cf8' }}>
+                    <BookOpen size={24} />
+                  </div>
+                  <div className="stat-trend up">
+                    <ArrowUpRight size={14} /> 12%
+                  </div>
                 </div>
-              </form>
-            </div>
-          )}
+                <div className="stat-value">{stats.courses}</div>
+                <div className="stat-label">Total Courses</div>
+              </div>
+              
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                    <Users size={24} />
+                  </div>
+                  <div className="stat-trend up">
+                    <ArrowUpRight size={14} /> 8%
+                  </div>
+                </div>
+                <div className="stat-value">{stats.users}</div>
+                <div className="stat-label">System Users</div>
+              </div>
 
-          <div className="users-table-container glass">
-            {loading ? (
-              <Loader fullPage={false} message="Loading user data..." />
-            ) : (
-              <table className="admin-table">
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                    <Award size={24} />
+                  </div>
+                  <div className="stat-trend down">
+                    <ArrowDownRight size={14} /> 2%
+                  </div>
+                </div>
+                <div className="stat-value">{stats.instructors}</div>
+                <div className="stat-label">Active Instructors</div>
+              </div>
+
+              <div className="premium-stat-card">
+                <div className="stat-header">
+                  <div className="stat-icon-box" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div className="status-badge online">
+                    <div className="status-dot"></div> Online
+                  </div>
+                </div>
+                <div className="stat-value">99.9%</div>
+                <div className="stat-label">System Uptime</div>
+              </div>
+            </div>
+
+            {/* Monitoring Section */}
+            <div className="monitoring-grid">
+              <div className="premium-section-card">
+                <div className="section-header">
+                  <h2>Engagement Growth</h2>
+                  <div className="status-badge online">Weekly View</div>
+                </div>
+                <div className="chart-container-mock">
+                  {revenueData.map((d, i) => (
+                    <div key={i} className="bar-wrapper">
+                      <div 
+                        className="bar-fill" 
+                        style={{ height: `${d.value}%` }}
+                        data-value={d.value}
+                      ></div>
+                      <span className="bar-label">{d.day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="premium-section-card">
+                <div className="section-header">
+                  <h2>Recent Activity</h2>
+                  <RefreshCcw 
+                    size={16} 
+                    className={refreshing ? 'animate-spin' : ''} 
+                    onClick={fetchAdminData}
+                    style={{ cursor: 'pointer', color: '#64748b' }}
+                  />
+                </div>
+                <div className="activity-list">
+                  {activityLogs.map(log => (
+                    <div key={log.id} className="activity-item">
+                      <div className="activity-point" style={{ background: log.color }}></div>
+                      <div className="activity-content">
+                        <div className="activity-title">{log.user} <span style={{ fontWeight: 400, color: '#64748b' }}>{log.type === 'registration' ? 'joined the platform' : log.type === 'enrollment' ? 'enrolled in a course' : 'updated content'}</span></div>
+                        <div className="activity-time">{log.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>Student Directory</h2>
+              <Button variant="primary" onClick={() => setIsCreatingUser(!isCreatingUser)}>
+                {isCreatingUser ? 'Cancel' : 'Add Student'}
+              </Button>
+            </div>
+
+            {isCreatingUser && (
+              <div className="premium-section-card animate-slide-up" style={{ marginBottom: '2rem' }}>
+                <form onSubmit={handleCreateUser} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <input className="admin-input" placeholder="Name" required value={newUserData.name} onChange={e => setNewUserData({...newUserData, name: e.target.value})} />
+                  <input className="admin-input" placeholder="Email" type="email" required value={newUserData.email} onChange={e => setNewUserData({...newUserData, email: e.target.value})} />
+                  <input className="admin-input" placeholder="Phone" required value={newUserData.phone} onChange={e => setNewUserData({...newUserData, phone: e.target.value})} />
+                  <input className="admin-input" placeholder="Password" type="password" required value={newUserData.password} onChange={e => setNewUserData({...newUserData, password: e.target.value})} />
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Button type="submit" variant="primary">Create Account</Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="premium-table-container">
+              <table className="premium-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Phone</th>
-                    <th>Enrolled</th>
+                    <th>Student</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Courses</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.filter(u => u.role === 'student').map(u => (
+                  {filteredUsers.filter(u => u.role === 'student').map(u => (
                     <tr key={u.id}>
-                      <td>{u.name}</td>
-                      <td>{u.email}</td>
-                      <td><span className={`role-badge-small ${u.role}`}>{u.role}</span></td>
-                      <td>{u.phone}</td>
                       <td>
-                        {u.role === 'student' || u.role === 'instructor' ? (
-                          <span className="enrollment-count-badge">{u.enrollment_count || 0} Courses</span>
-                        ) : '-'}
+                        <div className="user-cell">
+                          <div className="user-avatar-small">{u.name.charAt(0)}</div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'white' }}>{u.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>ID: {u.id.slice(-6)}</div>
+                          </div>
+                        </div>
                       </td>
                       <td>
-                        <button 
-                          className="delete-btn" 
-                          onClick={() => handleDeleteUser(u.id, u.name)}
-                          disabled={u.id === user.id}
-                        >
-                          Delete
-                        </button>
+                        <div style={{ fontSize: '0.875rem' }}>{u.email}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{u.phone}</div>
+                      </td>
+                      <td>
+                        <span className="status-badge online">Active</span>
+                      </td>
+                      <td>
+                        <div className="enrollment-count-badge" onClick={() => handleViewStudentCourses(u)} style={{ cursor: 'pointer' }}>
+                          {u.enrollment_count || 0} Enrolled
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => handleDeleteUser(u.id, u.name)} className="delete-btn"><Trash2 size={14} /></button>
+                          <button onClick={() => handleViewStudentCourses(u)} className="nav-item-premium" style={{ padding: '6px' }}><ExternalLink size={14} /></button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
-        </section>
-      ) : activeTab === 'instructors' ? (
-        <section className="dashboard-section instructors-section animate-fade-in">
-          <div className="section-header-inline">
-            <h2 className="section-subtitle">Instructor <span className="gradient-text">Management</span></h2>
-            <Button variant="primary" onClick={() => setIsCreatingUser(!isCreatingUser)}>
-              {isCreatingUser ? 'Cancel' : 'Add New Instructor'}
-            </Button>
-          </div>
-
-          {isCreatingUser && (
-            <div className="create-user-form glass animate-slide-up" style={{ marginBottom: '30px', padding: '20px' }}>
-              <form onSubmit={handleCreateUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                <input 
-                  type="text" placeholder="Name" required 
-                  autoComplete="name"
-                  value={newUserData.name} onChange={e => setNewUserData({...newUserData, name: e.target.value, role: 'instructor'})}
-                  className="admin-input"
-                />
-                <input 
-                  type="email" placeholder="Email" required 
-                  autoComplete="email"
-                  value={newUserData.email} onChange={e => setNewUserData({...newUserData, email: e.target.value})}
-                  className="admin-input"
-                />
-                <input 
-                  type="tel" placeholder="Phone (10 digits)" required 
-                  maxLength={10}
-                  autoComplete="tel"
-                  value={newUserData.phone} 
-                  onChange={e => {
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setNewUserData({...newUserData, phone: val});
-                  }}
-                  className="admin-input"
-                />
-                <input 
-                  type="password" placeholder="Password" required 
-                  autoComplete="new-password"
-                  value={newUserData.password} onChange={e => setNewUserData({...newUserData, password: e.target.value})}
-                  className="admin-input"
-                />
-                <div style={{ gridColumn: 'span 2' }}>
-                  <Button type="submit" variant="primary">Create Instructor</Button>
-                </div>
-              </form>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="users-table-container glass">
-            {loading ? (
-              <Loader fullPage={false} message="Loading instructor data..." />
-            ) : (
-              <table className="admin-table">
+        {activeTab === 'instructors' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>Faculty Management</h2>
+              <Button variant="primary" onClick={() => setIsCreatingUser(true)}>Add Instructor</Button>
+            </div>
+
+            <div className="premium-table-container">
+              <table className="premium-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Instructor</th>
                     <th>Email</th>
-                    <th>Phone</th>
-                    <th>Courses Created</th>
-                    <th>View Courses</th>
+                    <th>Courses</th>
+                    <th>Performance</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.filter(u => u.role === 'instructor').map(u => (
+                  {filteredUsers.filter(u => u.role === 'instructor').map(u => (
                     <tr key={u.id}>
-                      <td>{u.name}</td>
+                      <td>
+                        <div className="user-cell">
+                          <div className="user-avatar-small" style={{ background: 'var(--gradient-primary)' }}>{u.name.charAt(0)}</div>
+                          <div style={{ fontWeight: 600, color: 'white' }}>{u.name}</div>
+                        </div>
+                      </td>
                       <td>{u.email}</td>
-                      <td>{u.phone}</td>
                       <td>
                         <span className="enrollment-count-badge">{u.created_courses_count || 0} Courses</span>
                       </td>
                       <td>
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => handleViewInstructorCourses(u)}
-                        >
-                          View
-                        </Button>
+                        <div style={{ display: 'flex', gap: '4px', color: '#f59e0b' }}>
+                          {[1,2,3,4,5].map(s => <Star key={s} size={12} fill={s <= 4 ? "#f59e0b" : "none"} />)}
+                        </div>
                       </td>
                       <td>
-                        <button 
-                          className="delete-btn" 
-                          onClick={() => handleDeleteUser(u.id, u.name)}
-                          disabled={u.id === user.id}
-                        >
-                          Delete
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Button variant="secondary" size="sm" onClick={() => handleViewInstructorCourses(u)}>View Portfolio</Button>
+                          <button onClick={() => handleDeleteUser(u.id, u.name)} className="delete-btn"><Trash2 size={14} /></button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
-        </section>
-      ) : (
-        <section className="dashboard-section enrollments-section animate-fade-in">
-          <div className="section-header-inline">
-            <h2 className="section-subtitle">Student <span className="gradient-text">Progress Tracking</span></h2>
-            <Button variant="secondary" onClick={() => fetchEnrollments()} disabled={refreshing}>
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
-            </Button>
-          </div>
+        )}
 
-          <div className="users-table-container glass">
-            {loading ? (
-              <Loader fullPage={false} message="Loading tracking data..." />
-            ) : (
-              <table className="admin-table">
+        {activeTab === 'enrollments' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>Global Progress Tracking</h2>
+              <Button variant="secondary" onClick={fetchEnrollments} disabled={refreshing}>
+                <RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /> Refresh
+              </Button>
+            </div>
+
+            <div className="premium-table-container">
+              <table className="premium-table">
                 <thead>
                   <tr>
                     <th>Student</th>
-                    <th>Courses Enrolled</th>
-                    <th>Overall Progress</th>
-                    <th>Actions</th>
+                    <th>Pathways</th>
+                    <th>Completion</th>
+                    <th>Insights</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enrollments.length > 0 ? enrollments.map((s) => (
+                  {enrollments.map((s) => (
                     <tr key={s.student_email}>
                       <td>
-                        <div className="user-info-cell">
-                          <span className="user-name">{s.student_name}</span>
-                          <span className="user-email">{s.student_email}</span>
-                        </div>
+                        <div style={{ fontWeight: 600, color: 'white' }}>{s.student_name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{s.student_email}</div>
                       </td>
                       <td>
-                        <div className="enrollment-count-badge" style={{ cursor: 'pointer', display: 'inline-block' }} onClick={() => handleViewStudentCourses(s)}>
+                        <div className="enrollment-count-badge" onClick={() => handleViewStudentCourses(s)} style={{ cursor: 'pointer' }}>
                           {s.courses_count} {s.courses_count === 1 ? 'Course' : 'Courses'}
                         </div>
                       </td>
                       <td>
                         <div className="progress-cell">
-                          <div className="progress-bar-container" style={{ width: '100px' }}>
-                            <div className={`progress-bar-fill ${s.avg_progress === 100 ? 'completed' : ''}`} style={{ width: `${s.avg_progress}%` }}></div>
+                          <div className="progress-bar-container" style={{ width: '120px', background: 'rgba(255,255,255,0.05)' }}>
+                            <div className="progress-bar-fill" style={{ width: `${s.avg_progress}%`, background: s.avg_progress === 100 ? '#10b981' : 'var(--gradient-primary)' }}></div>
                           </div>
-                          <span className="progress-percent" style={{ color: s.avg_progress === 100 ? '#10b981' : 'inherit' }}>{s.avg_progress}%</span>
+                          <span style={{ fontWeight: 700, color: s.avg_progress === 100 ? '#10b981' : 'white' }}>{s.avg_progress}%</span>
                         </div>
                       </td>
                       <td>
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => handleViewStudentCourses(s)}
-                        >
-                          View Progress
-                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => handleViewStudentCourses(s)}>View Analytics</Button>
                       </td>
                     </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan="3" style={{ textAlign: 'center', padding: '30px' }}>No enrollment data found.</td>
-                    </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
-        </section>
-      )}
+        )}
       </main>
+
+      {/* Modals */}
       <StudentCoursesModal 
         isOpen={isStudentModalOpen}
         onClose={() => { setIsStudentModalOpen(false); setSelectedStudent(null); }}

@@ -19,15 +19,21 @@ const updateProfile = async (req, res) => {
     // Handle profile image if uploaded
     if (req.file) {
       updateData.profile_image = `/uploads/${req.file.filename}`;
+    } else if (req.body.remove_image === 'true') {
+      updateData.profile_image = '';
     }
 
     const updatedUser = await User.update(userId, updateData);
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
       user: {
-        id: updatedUser.id,
+        id: updatedUser.id || updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         phone: updatedUser.phone,
