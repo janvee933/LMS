@@ -36,7 +36,13 @@ const Courses = () => {
       setLoading(true);
       // Fetch courses
       const coursesRes = await api.get('/courses');
-      const coursesData = coursesRes.data.data || [];
+      let coursesData = coursesRes.data.data || [];
+      
+      // If user is instructor, show only their courses
+      if (user && user.role === 'instructor') {
+        coursesData = coursesData.filter(c => c.instructor_id === user.id);
+      }
+      
       setCourses(coursesData);
       setFilteredCourses(coursesData);
 

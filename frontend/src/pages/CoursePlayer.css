@@ -188,10 +188,14 @@
 
 .video-container {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  max-width: 1200px;
+  height: 750px;
+  min-height: 750px;
+  margin: 0 auto;
   background: black;
   border-radius: var(--radius-md);
   overflow: hidden;
+  position: relative;
 }
 
 .video-placeholder {

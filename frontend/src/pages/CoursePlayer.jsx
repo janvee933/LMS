@@ -378,7 +378,7 @@ const CoursePlayer = () => {
           </div>
         ) : currentLesson ? (
           <>
-            <div className="video-container" style={{ position: 'relative', height: '500px', overflow: 'hidden', background: '#0f172a' }}>
+            <div className="video-container" style={{ position: 'relative', width: '100%', maxWidth: '1200px', height: '750px', minHeight: '750px', margin: '0 auto', overflow: 'hidden', background: '#0f172a', borderRadius: '12px' }}>
               {currentLesson.video_url && (currentLesson.video_url.toLowerCase().endsWith('.mp4') || currentLesson.video_url.startsWith('/uploads/')) ? (
                 <video 
                   key={currentLesson.id}

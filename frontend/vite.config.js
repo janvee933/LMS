@@ -6,8 +6,17 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/uploads': 'http://localhost:5000',
+      '/api': {
+        target: 'https://lms-awza.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api'), // Ensure /api is preserved correctly
+      },
+      '/uploads': {
+        target: 'https://lms-awza.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

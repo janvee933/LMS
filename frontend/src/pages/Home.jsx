@@ -29,7 +29,14 @@ const Home = () => {
     try {
       setLoading(true);
       const coursesRes = await api.get('/courses');
-      setCourses(coursesRes.data.data || []);
+      let allCourses = coursesRes.data.data || [];
+      
+      // If user is instructor, show only their courses
+      if (user && user.role === 'instructor') {
+        allCourses = allCourses.filter(c => c.instructor_id === user.id);
+      }
+      
+      setCourses(allCourses);
 
       if (user) {
         const enrollRes = await api.get('/enrollments/my-enrollments');
