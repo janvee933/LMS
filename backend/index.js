@@ -18,20 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      'http://localhost:5173',
-      'http://127.0.0.1:5173'
-    ].filter(Boolean);
-    
-    // Allow any origin if NODE_ENV is development or if it's in the allowed list
-    if (!origin || process.env.NODE_ENV === 'development' || allowedOrigins.some(ao => origin.startsWith(ao))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Dynamically allow all origins (useful for multiple Vercel/Netlify links)
   credentials: true
 }));
 app.use(helmet({
