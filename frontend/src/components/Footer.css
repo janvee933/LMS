@@ -1,6 +1,6 @@
 .dashboard-footer {
-  margin-top: 60px;
-  padding: 60px 40px 20px;
+  margin-top: 30px;
+  padding: 25px 40px 15px;
   color: var(--text-main);
   border-top: 1px solid var(--border-glass);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -9,8 +9,8 @@
 .footer-content {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 60px;
+  gap: 30px;
+  margin-bottom: 20px;
 }
 
 .footer-brand {
@@ -20,7 +20,7 @@
 .footer-logo {
   font-size: 24px;
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
 
@@ -35,14 +35,14 @@
   text-transform: uppercase;
   color: var(--text-dim);
   letter-spacing: 1px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   font-weight: 700;
 }
 
 .link-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .link-group a {
@@ -89,7 +89,7 @@
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 30px;
+  padding-top: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;

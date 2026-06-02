@@ -14,20 +14,18 @@ const Footer = () => {
           <p className="footer-tagline">Empowering the next generation of digital creators and innovators.</p>
         </div>
 
-        <div className="footer-links">
-          <div className="link-group">
-            <h4>Platform</h4>
-            <Link to="/courses">All Courses</Link>
-            <Link to="/dashboard">My Dashboard</Link>
-            <a href="#support">Support Center</a>
-          </div>
-          
-          <div className="link-group">
-            <h4>Resources</h4>
-            <a href="#api">API Documentation</a>
-            <a href="#blog">Learning Blog</a>
-            <a href="#terms">Terms of Service</a>
-          </div>
+        <div className="link-group">
+          <h4>Platform</h4>
+          <Link to="/courses">All Courses</Link>
+          <Link to="/dashboard">My Dashboard</Link>
+          <a href="#support">Support Center</a>
+        </div>
+        
+        <div className="link-group">
+          <h4>Resources</h4>
+          <a href="#api">API Documentation</a>
+          <a href="#blog">Learning Blog</a>
+          <a href="#terms">Terms of Service</a>
         </div>
 
         <div className="footer-social">
