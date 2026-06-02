@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Edit2, BookOpen, AlertCircle, CheckCircle, HelpCircle, Award } from 'lucide-react';
+import { X, Plus, Trash2, Edit2, BookOpen, AlertCircle, CheckCircle, HelpCircle, Award, Play } from 'lucide-react';
 import api from '../api/axios';
 import Button from './Button';
 import Loader from './Loader';
@@ -356,6 +356,52 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
           <div className="quiz-main-view">
             {activeLesson || isManagingFinalQuiz ? (
               <>
+                {!isManagingFinalQuiz && activeLesson && (
+                  <div className="lesson-preview-section" style={{ padding: '30px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h3 style={{ color: 'white', margin: 0, fontSize: '1.1rem' }}>Lesson Content Preview</h3>
+                    </div>
+                    {activeLesson.video_url && (
+                      <div style={{ marginBottom: '20px' }}>
+                        {activeLesson.video_url.toLowerCase().endsWith('.mp4') || activeLesson.video_url.startsWith('/uploads/') ? (
+                          <video 
+                            src={activeLesson.video_url} 
+                            controls 
+                            controlsList="nodownload"
+                            style={{ width: '100%', maxHeight: '400px', borderRadius: '8px', backgroundColor: '#000', objectFit: 'contain' }} 
+                          />
+                        ) : (
+                          <div style={{ padding: '15px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                            <a href={activeLesson.video_url} target="_blank" rel="noreferrer" style={{ color: '#6366f1', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                              <Play size={16} /> Watch External Video
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {activeLesson.content_url && (
+                      <div style={{ marginBottom: '20px' }}>
+                        <a 
+                          href={activeLesson.content_url} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          style={{ color: '#6366f1', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                          <BookOpen size={16} /> View Reading Material (PDF)
+                        </a>
+                      </div>
+                    )}
+                    {activeLesson.content && (
+                      <div style={{ color: '#94a3b8', lineHeight: '1.6', fontSize: '14px', whiteSpace: 'pre-wrap', background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px' }}>
+                        {activeLesson.content}
+                      </div>
+                    )}
+                    {!activeLesson.video_url && !activeLesson.content_url && !activeLesson.content && (
+                       <p style={{ color: '#64748b', fontSize: '14px', fontStyle: 'italic', margin: 0 }}>No content added for this lesson yet.</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="quiz-header">
                   <div>
                     <span className="lesson-label">{isManagingFinalQuiz ? 'Course Level' : `Lesson ${lessons.findIndex(l => l.id === activeLesson.id) + 1}`}</span>
