@@ -36,7 +36,8 @@ export const AuthProvider = ({ children }) => {
     
     if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
-      verifySession();
+      setLoading(false); // Render immediately using cached session
+      verifySession();   // Verify in background
     } else {
       console.log('No saved session found in sessionStorage');
       setLoading(false);

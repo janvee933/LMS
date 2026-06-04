@@ -343,7 +343,7 @@
 .chart-container-mock {
   height: 300px;
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 16px;
   padding: 1rem 0 2rem;
   border-bottom: 1px solid var(--border-glass);
@@ -354,7 +354,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
+  height: 100%;
 }
 
 .bar-fill {

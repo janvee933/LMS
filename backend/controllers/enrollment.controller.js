@@ -155,19 +155,21 @@ const getInstructorEnrollments = async (req, res) => {
 const getCourseStudents = async (req, res) => {
   try {
     const { courseId } = req.params;
-    // Simplified: Use Enrollment model or find directly
-    const EnrollmentModel = require('../models/enrollment'); // Use actual model if needed or implement in Enrollment model
-    const enrollmentInstances = await Enrollment.getAllAdmin(); // This is a bit overkill, but maintains structure
+    const EnrollmentModel = require('../models/enrollment');
+    const enrollmentInstances = await EnrollmentModel.getAllAdmin();
     
     const rows = enrollmentInstances.filter(e => e.course_id.toString() === courseId.toString());
 
-    const data = rows.map(r => ({
-      ...r,
-      id: r.student_id, // For compatibility
-      name: r.student_name,
-      email: r.student_email,
-      progress: 0 // Placeholder
-    }));
+    const data = rows.map(r => {
+      const progress = r.total_lessons > 0 ? Math.round((r.completed_lessons / r.total_lessons) * 100) : 0;
+      return {
+        ...r,
+        id: r.student_id,
+        name: r.student_name,
+        email: r.student_email,
+        progress: progress
+      };
+    });
 
     res.status(200).json({ success: true, data });
   } catch (error) {

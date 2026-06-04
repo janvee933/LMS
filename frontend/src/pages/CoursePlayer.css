@@ -189,8 +189,8 @@
 .video-container {
   width: 100%;
   max-width: 1200px;
-  height: 750px;
-  min-height: 750px;
+  height: 550px;
+  flex-shrink: 0;
   margin: 0 auto;
   background: black;
   border-radius: var(--radius-md);

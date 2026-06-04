@@ -92,28 +92,38 @@ const CoursePlayer = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch course details
-      const courseRes = await api.get(`/courses/${courseId}`);
+      
+      // Fetch everything concurrently to slash loading time
+      const [courseRes, questionsRes, statusRes, lessonsRes, progressRes] = await Promise.all([
+        api.get(`/courses/${courseId}`),
+        api.get(`/quizzes/course/${courseId}`).catch(() => ({ data: { success: false } })),
+        api.get(`/quizzes/status/${courseId}`).catch(() => ({ data: { success: false } })),
+        api.get(`/lessons/course/${courseId}`),
+        api.get(`/progress/course/${courseId}`)
+      ]);
+
       if (courseRes.data.success) {
         setCourseInfo(courseRes.data.data);
       }
+      
+      if (questionsRes.data.success) {
+        setFinalQuizQuestions(questionsRes.data.data || []);
+      }
+      
+      if (statusRes.data.success) {
+        setQuizStatus(statusRes.data.data);
+      }
 
-      await fetchQuizData();
-
-        // Fetch lessons
-        const lessonsRes = await api.get(`/lessons/course/${courseId}`);
-        if (lessonsRes.data.success) {
-          const lessonData = lessonsRes.data.data || [];
-          setLessons(lessonData);
-          if (lessonData.length > 0) {
-            const savedLessonId = sessionStorage.getItem(`lastLesson_${courseId}`);
-            const lastLesson = lessonData.find(l => String(l.id) === savedLessonId);
-            handleSelectLesson(lastLesson || lessonData[0]);
-          }
+      if (lessonsRes.data.success) {
+        const lessonData = lessonsRes.data.data || [];
+        setLessons(lessonData);
+        if (lessonData.length > 0) {
+          const savedLessonId = sessionStorage.getItem(`lastLesson_${courseId}`);
+          const lastLesson = lessonData.find(l => String(l.id) === savedLessonId);
+          handleSelectLesson(lastLesson || lessonData[0]);
         }
+      }
 
-      // Fetch user progress
-      const progressRes = await api.get(`/progress/course/${courseId}`);
       if (progressRes.data.success) {
         const completedIds = (progressRes.data.data || [])
           .filter(p => p.status === 'completed')
@@ -378,7 +388,7 @@ const CoursePlayer = () => {
           </div>
         ) : currentLesson ? (
           <>
-            <div className="video-container" style={{ position: 'relative', width: '100%', maxWidth: '1200px', height: '750px', minHeight: '750px', margin: '0 auto', overflow: 'hidden', background: '#0f172a', borderRadius: '12px' }}>
+            <div className="video-container" style={{ background: '#0f172a', borderRadius: '12px' }}>
               {currentLesson.video_url && (currentLesson.video_url.toLowerCase().endsWith('.mp4') || currentLesson.video_url.startsWith('/uploads/')) ? (
                 <video 
                   key={currentLesson.id}

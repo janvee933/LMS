@@ -140,7 +140,7 @@ const StudentDashboard = () => {
                       <div className="progress-bar" style={{ width: `${item.progress || 0}%` }}></div>
                     </div>
                     <div className="progress-text">
-                      {item.progress || 0}% Complete
+                      {item.progress === 100 ? '100% Completed' : `${item.progress || 0}% Complete`}
                       {item.progress === 100 && item.quiz_status === 'passed' && <span className="completed-label" style={{ color: '#10b981' }}><Award size={12} /> Certificate Earned</span>}
                       {item.progress === 100 && item.quiz_status !== 'passed' && <span className="completed-label" style={{ color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.2)' }}><Award size={12} /> Assessment Required</span>}
                     </div>
@@ -148,7 +148,7 @@ const StudentDashboard = () => {
                 </div>
                 <div className="continue-actions">
                   <Button variant="secondary" className="resume-btn" onClick={() => handleResume(item.course_id)}>
-                    {item.progress === 100 ? 'Go to Course' : 'Resume'}
+                    {item.progress === 100 ? 'Review Completed Course' : 'Resume Course'}
                   </Button>
                   
                   <Button variant="outline" className="rate-btn-dashboard" onClick={() => handleOpenRating(item)} style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.2)' }}>

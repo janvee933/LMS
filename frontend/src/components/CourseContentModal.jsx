@@ -368,7 +368,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                             src={activeLesson.video_url} 
                             controls 
                             controlsList="nodownload"
-                            style={{ width: '100%', maxHeight: '400px', borderRadius: '8px', backgroundColor: '#000', objectFit: 'contain' }} 
+                            style={{ width: '100%', maxWidth: '1200px', height: '550px', flexShrink: 0, margin: '0 auto', display: 'block', borderRadius: '8px', backgroundColor: '#000', objectFit: 'contain' }} 
                           />
                         ) : (
                           <div style={{ padding: '15px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>

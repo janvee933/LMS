@@ -56,6 +56,9 @@ const Navbar = () => {
         <div className="navbar-main">
           <Link to="/" className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link to="/courses" className={`navbar-link ${location.pathname === '/courses' ? 'active' : ''}`}>Courses</Link>
+          {user && user.role === 'student' && (
+            <Link to="/student/dashboard" className={`navbar-link ${location.pathname === '/student/dashboard' ? 'active' : ''}`}>Enrolled</Link>
+          )}
           
           <form className="navbar-search-form" onSubmit={handleSearchSubmit}>
             <Search className="nav-search-icon" size={18} />
@@ -146,6 +149,9 @@ const Navbar = () => {
         <div className="mobile-nav-links">
           <Link to="/" onClick={toggleMenu}>Home</Link>
           <Link to="/courses" onClick={toggleMenu}>Courses</Link>
+          {user && user.role === 'student' && (
+            <Link to="/student/dashboard" onClick={toggleMenu}>Enrolled</Link>
+          )}
           {user ? (
             <>
               <Link to={`/${user.role}/dashboard`} onClick={toggleMenu}>Dashboard</Link>

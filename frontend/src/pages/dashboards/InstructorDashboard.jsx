@@ -37,23 +37,46 @@ const InstructorDashboard = () => {
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedContentCourse, setSelectedContentCourse] = useState(null);
 
-  // Mock data for charts
-  const [engagementData] = useState([
-    { day: 'Mon', value: 45 },
-    { day: 'Tue', value: 72 },
-    { day: 'Wed', value: 38 },
-    { day: 'Thu', value: 85 },
-    { day: 'Fri', value: 64 },
-    { day: 'Sat', value: 92 },
-    { day: 'Sun', value: 78 },
-  ]);
+  // Derived dynamic data for monitoring
+  const activityLogs = useMemo(() => {
+    const allCourses = enrollments.flatMap(s => s.courses.map(c => ({
+      ...c,
+      student_name: s.student_name,
+      type: c.progress === 100 ? 'completion' : 'enrollment'
+    })));
+    
+    // Sort by enrolled_at/completed_at descending (mocking recent activity)
+    allCourses.sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at));
+    
+    return allCourses.slice(0, 5).map((c, i) => ({
+      id: c.id,
+      type: c.type,
+      user: c.student_name,
+      time: new Date(c.enrolled_at).toLocaleDateString(),
+      color: c.type === 'completion' ? '#10b981' : '#818cf8',
+      course: c.course_title
+    }));
+  }, [enrollments]);
 
-  const [activityLogs] = useState([
-    { id: 1, type: 'enrollment', user: 'Rahul Sharma', time: '2 mins ago', color: '#818cf8', course: 'React Mastery' },
-    { id: 2, type: 'quiz_completion', user: 'Priya Singh', time: '15 mins ago', color: '#10b981', course: 'Advanced Node.js' },
-    { id: 3, type: 'review', user: 'Sanjay Gupta', time: '1 hour ago', color: '#f59e0b', course: 'UI/UX Design' },
-    { id: 4, type: 'enrollment', user: 'Ananya Iyer', time: '3 hours ago', color: '#ec4899', course: 'React Mastery' },
-  ]);
+  const engagementData = useMemo(() => {
+    // Generate engagement growth based on enrollments count per day of week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const counts = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
+    
+    enrollments.forEach(s => {
+      s.courses.forEach(c => {
+        if (c.enrolled_at) {
+          const day = days[new Date(c.enrolled_at).getDay()];
+          counts[day] += 15; // Multiply by 15 for visibility in graph
+        }
+      });
+    });
+    
+    return days.map(day => ({
+      day,
+      value: Math.min(counts[day] || 5, 100) // Default to small value if 0, max 100
+    }));
+  }, [enrollments]);
 
   const fetchEnrollments = async () => {
     try {

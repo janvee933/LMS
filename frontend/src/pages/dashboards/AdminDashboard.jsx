@@ -46,23 +46,54 @@ const AdminDashboard = () => {
   const [selectedInstructorCourses, setSelectedInstructorCourses] = useState([]);
   const [selectedInstructorName, setSelectedInstructorName] = useState('');
 
-  // Mock data for monitoring
-  const [activityLogs] = useState([
-    { id: 1, type: 'registration', user: 'Rahul Sharma', time: '2 mins ago', color: '#818cf8' },
-    { id: 2, type: 'enrollment', user: 'Priya Singh', time: '15 mins ago', color: '#10b981' },
-    { id: 3, type: 'course_creation', user: 'Dr. Amit Kumar', time: '1 hour ago', color: '#f59e0b' },
-    { id: 4, type: 'completion', user: 'Sanjay Gupta', time: '3 hours ago', color: '#ec4899' },
-  ]);
+  // Derived dynamic data for monitoring
+  const activityLogs = useMemo(() => {
+    const allCourses = enrollments.flatMap(s => s.courses.map(c => ({
+      ...c,
+      student_name: s.student_name,
+      type: c.progress === 100 ? 'completion' : 'enrollment'
+    })));
+    
+    // Sort by enrolled_at/completed_at descending (mocking recent activity)
+    allCourses.sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at));
+    
+    return allCourses.slice(0, 5).map((c, i) => ({
+      id: c.id,
+      type: c.type,
+      user: c.student_name,
+      time: new Date(c.enrolled_at).toLocaleDateString(),
+      color: c.type === 'completion' ? '#10b981' : '#818cf8',
+      course: c.course_title
+    }));
+  }, [enrollments]);
 
-  const [revenueData] = useState([
-    { day: 'Mon', value: 65 },
-    { day: 'Tue', value: 85 },
-    { day: 'Wed', value: 45 },
-    { day: 'Thu', value: 95 },
-    { day: 'Fri', value: 75 },
-    { day: 'Sat', value: 55 },
-    { day: 'Sun', value: 90 },
-  ]);
+  const revenueData = useMemo(() => {
+    // Generate engagement growth based on enrollments count per day of week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const counts = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
+    
+    enrollments.forEach(s => {
+      s.courses.forEach(c => {
+        if (c.enrolled_at) {
+          const day = days[new Date(c.enrolled_at).getDay()];
+          counts[day] += 10; // Multiply by 10 for visibility in graph
+        }
+      });
+    });
+    
+    return days.map(day => ({
+      day,
+      value: Math.min(counts[day] || 5, 100) // Default to small value if 0, max 100
+    }));
+  }, [enrollments]);
+
+  const [animateChart, setAnimateChart] = useState(false);
+
+  useEffect(() => {
+    // Trigger chart animation on mount
+    const timer = setTimeout(() => setAnimateChart(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const fetchEnrollments = async () => {
     try {
@@ -151,8 +182,18 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleViewStudentCourses = (student) => {
-    setSelectedStudent(student);
+  const handleViewStudentCourses = (studentOrEnrollment) => {
+    if (studentOrEnrollment.courses) {
+      // Called from Enrollments tab
+      setSelectedStudent(studentOrEnrollment);
+    } else {
+      // Called from Users tab
+      const studentEnrollmentData = enrollments.find(e => String(e.student_email) === String(studentOrEnrollment.email));
+      setSelectedStudent({
+        student_name: studentOrEnrollment.name,
+        courses: studentEnrollmentData ? studentEnrollmentData.courses : []
+      });
+    }
     setIsStudentModalOpen(true);
   };
 
@@ -163,6 +204,29 @@ const AdminDashboard = () => {
     setIsInstructorModalOpen(true);
   };
 
+  const handleGrantAttempt = async (userId, courseId) => {
+    if (!window.confirm('Are you sure you want to grant an extra attempt to this student?')) return;
+    
+    try {
+      setRefreshing(true);
+      const res = await api.post('/quizzes/grant-attempt', { userId, courseId });
+      if (res.data.success) {
+        alert('Extra attempt granted successfully');
+        await fetchEnrollments();
+        if (selectedStudent) {
+          const updatedEnrollments = await api.get('/enrollments/admin/all');
+          const newStudentData = updatedEnrollments.data.data.find(s => s.student_email === selectedStudent.student_email);
+          if (newStudentData) setSelectedStudent(newStudentData);
+        }
+      }
+    } catch (error) {
+      console.error('Error granting attempt', error);
+      alert(error.response?.data?.message || 'Failed to grant attempt');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) return <Loader fullPage message="Initializing Admin Panel..." />;
 
   return (
@@ -171,7 +235,7 @@ const AdminDashboard = () => {
       <aside className="admin-sidebar-premium">
         <div className="sidebar-logo">
           <ShieldCheck size={32} />
-          <span>Antigravity LMS</span>
+          <span>LMS</span>
         </div>
         
         <nav className="sidebar-nav-premium">
@@ -322,7 +386,7 @@ const AdminDashboard = () => {
                     <div key={i} className="bar-wrapper">
                       <div 
                         className="bar-fill" 
-                        style={{ height: `${d.value}%` }}
+                        style={{ height: animateChart ? `${d.value}%` : '0%' }}
                         data-value={d.value}
                       ></div>
                       <span className="bar-label">{d.day}</span>
@@ -536,6 +600,7 @@ const AdminDashboard = () => {
         onClose={() => { setIsStudentModalOpen(false); setSelectedStudent(null); }}
         studentName={selectedStudent?.student_name}
         courses={selectedStudent?.courses}
+        onGrantAttempt={handleGrantAttempt}
       />
       <InstructorCoursesModal 
         isOpen={isInstructorModalOpen}

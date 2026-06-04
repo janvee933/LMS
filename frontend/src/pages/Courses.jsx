@@ -34,8 +34,13 @@ const Courses = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch courses
-      const coursesRes = await api.get('/courses');
+      // Fetch courses and enrollments concurrently
+      const promises = [api.get('/courses')];
+      if (user) {
+        promises.push(api.get('/enrollments/my-enrollments'));
+      }
+      
+      const [coursesRes, enrollRes] = await Promise.all(promises);
       let coursesData = coursesRes.data.data || [];
       
       // If user is instructor, show only their courses
@@ -47,8 +52,7 @@ const Courses = () => {
       setFilteredCourses(coursesData);
 
       // Fetch enrollments if user is logged in
-      if (user) {
-        const enrollRes = await api.get('/enrollments/my-enrollments');
+      if (user && enrollRes) {
         setEnrollments(enrollRes.data.data || []);
       }
 
