@@ -214,6 +214,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateRole = async (userId, userName, currentRole, newRole) => {
+    if (currentRole === newRole) return;
+    if (window.confirm(`Are you sure you want to change ${userName}'s role to ${newRole}?`)) {
+      try {
+        const res = await api.put(`/auth/users/${userId}/role`, { role: newRole });
+        if (res.data.success) {
+          fetchAdminData();
+        }
+      } catch (error) {
+        alert(error.response?.data?.message || 'Failed to update user role');
+      }
+    }
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     if (newUserData.phone.length !== 10) {
@@ -525,7 +539,7 @@ const AdminDashboard = () => {
                   <tr>
                     <th>Student</th>
                     <th>Contact</th>
-                    <th>Status</th>
+                    <th>Role</th>
                     <th>Courses</th>
                     <th>Actions</th>
                   </tr>
@@ -547,7 +561,16 @@ const AdminDashboard = () => {
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{u.phone}</div>
                       </td>
                       <td>
-                        <span className="status-badge online">Active</span>
+                        <select 
+                          value={u.role}
+                          onChange={(e) => handleUpdateRole(u.id, u.name, u.role, e.target.value)}
+                          className="admin-input"
+                          style={{ padding: '4px 8px', fontSize: '0.875rem', width: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.05)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}
+                        >
+                          <option value="student" style={{color: 'black'}}>Student</option>
+                          <option value="instructor" style={{color: 'black'}}>Instructor</option>
+                          <option value="admin" style={{color: 'black'}}>Admin</option>
+                        </select>
                       </td>
                       <td>
                         <div className="enrollment-count-badge" onClick={() => handleViewStudentCourses(u)} style={{ cursor: 'pointer' }}>
@@ -581,8 +604,8 @@ const AdminDashboard = () => {
                   <tr>
                     <th>Instructor</th>
                     <th>Email</th>
+                    <th>Role</th>
                     <th>Courses</th>
-                    <th>Performance</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -597,12 +620,19 @@ const AdminDashboard = () => {
                       </td>
                       <td>{u.email}</td>
                       <td>
-                        <span className="enrollment-count-badge">{u.created_courses_count || 0} Courses</span>
+                        <select 
+                          value={u.role}
+                          onChange={(e) => handleUpdateRole(u.id, u.name, u.role, e.target.value)}
+                          className="admin-input"
+                          style={{ padding: '4px 8px', fontSize: '0.875rem', width: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.05)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}
+                        >
+                          <option value="student" style={{color: 'black'}}>Student</option>
+                          <option value="instructor" style={{color: 'black'}}>Instructor</option>
+                          <option value="admin" style={{color: 'black'}}>Admin</option>
+                        </select>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '4px', color: '#f59e0b' }}>
-                          {[1,2,3,4,5].map(s => <Star key={s} size={12} fill={s <= 4 ? "#f59e0b" : "none"} />)}
-                        </div>
+                        <span className="enrollment-count-badge">{u.created_courses_count || 0} Courses</span>
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>

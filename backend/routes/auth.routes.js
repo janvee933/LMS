@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, getMe, logout, listUsers, createUser, deleteUser } = require('../controllers/auth.controller');
+const { signup, login, getMe, logout, listUsers, createUser, deleteUser, updateUserRole } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 const authorize = require('../middleware/role.middleware');
 const { authLimiter } = require('../middleware/rateLimit.middleware');
@@ -14,5 +14,6 @@ router.get('/me', protect, getMe);
 router.get('/users', protect, authorize('admin'), listUsers);
 router.post('/users', protect, authorize('admin'), createUser);
 router.delete('/users/:id', protect, authorize('admin'), deleteUser);
+router.put('/users/:id/role', protect, authorize('admin'), updateUserRole);
 
 module.exports = router;

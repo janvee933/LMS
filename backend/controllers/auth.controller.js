@@ -162,4 +162,28 @@ const listUsers = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe, logout, listUsers, deleteUser, createUser };
+const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    if (id === req.user.id.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot change your own role' });
+    }
+
+    if (!['student', 'instructor', 'admin'].includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    const updatedUser = await User.update(id, { role });
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'User role updated successfully', user: { id: updatedUser._id, role: updatedUser.role } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { signup, login, getMe, logout, listUsers, deleteUser, createUser, updateUserRole };
