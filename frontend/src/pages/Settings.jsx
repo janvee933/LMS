@@ -168,9 +168,9 @@ const Settings = () => {
         </button>
       </div>
 
-      <div className="section-header">
-        <h1 className="section-title">Account <span className="gradient-text">Settings</span></h1>
-        <p className="section-desc">Manage your profile, security, and preferences.</p>
+      <div className="settings-header">
+        <h1 className="settings-title">Account <span className="gradient-text">Settings</span></h1>
+        <p className="settings-desc">Manage your profile, security, and preferences.</p>
       </div>
 
       <div className="settings-grid">

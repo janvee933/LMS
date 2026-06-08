@@ -8,6 +8,14 @@ const CourseDetailModal = ({ isOpen, onClose, course, isEnrolled, onEnroll }) =>
 
   const { title, description, thumbnail, duration, level, rating, price, instructor_name, student_count } = course;
 
+  const getMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`;
+    }
+    return url;
+  };
+
   return (
     <div className="course-detail-overlay animate-fade-in" onClick={onClose}>
       <div className="course-detail-container glass animate-slide-up" onClick={e => e.stopPropagation()}>
@@ -16,7 +24,7 @@ const CourseDetailModal = ({ isOpen, onClose, course, isEnrolled, onEnroll }) =>
         <div className="modal-grid">
           <div className="modal-visuals">
             <div className="preview-image-wrapper">
-              <img src={thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80'} alt={title} />
+              <img src={getMediaUrl(thumbnail) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80'} alt={title} />
               <div className="image-overlay-badge">{level}</div>
             </div>
             

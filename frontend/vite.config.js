@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    open: true, // This will force Vite to open the system's default browser (e.g., Chrome/Edge) instead of VS Code's internal browser
     proxy: {
       '/api': {
         target: 'https://lms-awza.onrender.com',

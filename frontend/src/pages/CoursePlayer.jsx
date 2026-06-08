@@ -5,6 +5,8 @@ import Button from '../components/Button';
 import CertificateModal from '../components/CertificateModal';
 import api from '../api/axios';
 import CourseRatingModal from '../components/CourseRatingModal';
+import DoubtModal from '../components/DoubtModal';
+import { MessageSquare } from 'lucide-react';
 import './CoursePlayer.css';
 
 const CoursePlayer = () => {
@@ -25,9 +27,18 @@ const CoursePlayer = () => {
   const [certificateData, setCertificateData] = useState(null);
   const [isCertOpen, setIsCertOpen] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [isDoubtOpen, setIsDoubtOpen] = useState(false);
   
   const [lessonAnswers, setLessonAnswers] = useState({});
   const [lessonQuizSubmitted, setLessonQuizSubmitted] = useState(false);
+
+  const getMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`;
+    }
+    return url;
+  };
 
   const fetchCertificate = async () => {
     try {
@@ -228,7 +239,7 @@ const CoursePlayer = () => {
             <h2 className="sidebar-course-title">{courseInfo?.title}</h2>
             {courseInfo?.video_url && (
               <a 
-                href={courseInfo.video_url} 
+                href={getMediaUrl(courseInfo.video_url)} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="intro-video-pill"
@@ -254,8 +265,17 @@ const CoursePlayer = () => {
                  className="sidebar-rate-btn" 
                  onClick={() => setIsRatingOpen(true)}
                  title="Rate this Course"
+                 style={{ marginBottom: '8px' }}
                >
                  <Star size={14} fill="#fbbf24" color="#fbbf24" /> <span>Rate Course</span>
+               </button>
+               <button 
+                 className="sidebar-rate-btn" 
+                 onClick={() => setIsDoubtOpen(true)}
+                 title="Ask a Doubt"
+                 style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', border: '1px solid rgba(99, 102, 241, 0.2)' }}
+               >
+                 <MessageSquare size={14} /> <span>Ask a Doubt</span>
                </button>
             </div>
         </div>
@@ -392,7 +412,7 @@ const CoursePlayer = () => {
               {currentLesson.video_url && (currentLesson.video_url.toLowerCase().endsWith('.mp4') || currentLesson.video_url.startsWith('/uploads/')) ? (
                 <video 
                   key={currentLesson.id}
-                  src={currentLesson.video_url} 
+                  src={getMediaUrl(currentLesson.video_url)} 
                   controls 
                   controlsList="nodownload"
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -401,7 +421,7 @@ const CoursePlayer = () => {
                 </video>
               ) : currentLesson.content_url && (currentLesson.content_url.toLowerCase().endsWith('.pdf') || currentLesson.content_url.includes('/uploads/')) ? (
                 <iframe 
-                  src={currentLesson.content_url} 
+                  src={getMediaUrl(currentLesson.content_url)} 
                   title="Study Material"
                   style={{ width: '100%', height: '100%', border: 'none' }}
                 />
@@ -563,6 +583,13 @@ const CoursePlayer = () => {
         courseId={courseId}
         courseTitle={courseInfo?.title}
         onRatingSubmitted={(msg) => alert(msg)}
+      />
+
+      <DoubtModal
+        isOpen={isDoubtOpen}
+        onClose={() => setIsDoubtOpen(false)}
+        courseId={courseId}
+        courseTitle={courseInfo?.title}
       />
     </div>
   );

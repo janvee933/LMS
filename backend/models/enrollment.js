@@ -129,6 +129,7 @@ const Enrollment = {
       return {
         ...e,
         id: e._id.toString(),
+        course_id: courseId.toString(),
         student_id: studentId.toString(),
         student_name: e.user_id?.name,
         student_email: e.user_id?.email,
@@ -181,6 +182,7 @@ const Enrollment = {
       return {
         ...e,
         id: e._id.toString(),
+        course_id: courseId.toString(),
         student_id: studentId.toString(),
         student_name: e.user_id?.name,
         student_email: e.user_id?.email,

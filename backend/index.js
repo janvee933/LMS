@@ -2,6 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 require('./config/db');
 const express = require('express');
+console.log('Restarting server to clear any caching issues...');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -12,6 +13,14 @@ const cookieParser = require('cookie-parser');
 const app = express();
 
 app.set('trust proxy', 1);
+
+// Disable caching for all API routes to prevent stale progress data
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Expires', '-1');
+  res.set('Pragma', 'no-cache');
+  next();
+});
 
 // Middlewares
 app.use(express.json());
@@ -44,6 +53,7 @@ const quizRoutes = require('./routes/quiz.routes');
 const ratingRoutes = require('./routes/rating.routes');
 const userRoutes = require('./routes/user.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const doubtRoutes = require('./routes/doubt.routes');
 
 const errorHandler = require('./middleware/errorHandle');
 
@@ -57,6 +67,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/doubts', doubtRoutes);
 
 app.get('/', (req, res) => {
   res.send('LMS Backend API is Running from backend folder...');

@@ -14,6 +14,14 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
   const [showPayment, setShowPayment] = useState(false);
   const [localEnrolled, setLocalEnrolled] = useState(isEnrolled);
 
+  const getMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`;
+    }
+    return url;
+  };
+
   useEffect(() => {
     setLocalEnrolled(isEnrolled);
   }, [isEnrolled]);
@@ -65,7 +73,7 @@ const CourseCard = ({ course, isEnrolled = false, onOpen, onViewStudents, onEdit
       style={{ cursor: 'pointer' }}
     >
       <div className="card-image">
-        <img src={thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80'} alt={title} />
+        <img src={getMediaUrl(thumbnail) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80'} alt={title} />
         <div className="card-badge">{level}</div>
       </div>
       <div className="card-content">

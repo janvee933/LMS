@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Award, TrendingUp, Clock, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -21,10 +21,48 @@ const StudentDashboard = () => {
   const [selectedRatingCourse, setSelectedRatingCourse] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const personalizedStats = useMemo(() => {
+    let totalProgress = 0;
+    let pendingLessons = 0;
+    let completedCourses = 0;
+    let upcomingQuizzes = 0;
+    let certificatesEarned = 0;
+
+    if (enrollments.length > 0) {
+      enrollments.forEach(e => {
+        totalProgress += (e.progress || 0);
+        const pending = (e.total_lessons || 0) - (e.completed_lessons || 0);
+        if (pending > 0) pendingLessons += pending;
+        
+        if (e.progress === 100 && e.quiz_status === 'passed') {
+          completedCourses += 1;
+        }
+
+        if (e.progress === 100 && e.quiz_status !== 'passed') {
+          upcomingQuizzes += 1;
+        }
+
+        if (e.completed_at || e.quiz_status === 'passed') {
+          certificatesEarned += 1;
+        }
+      });
+      totalProgress = Math.round(totalProgress / enrollments.length);
+    }
+
+    return {
+      learningProgress: totalProgress,
+      pendingLessons,
+      completedCourses,
+      upcomingQuizzes,
+      certificatesEarned,
+      enrolledCount: enrollments.length
+    };
+  }, [enrollments]);
+
   useEffect(() => {
     const fetchEnrollments = async () => {
       try {
-        const response = await api.get('/enrollments/my-enrollments');
+        const response = await api.get(`/enrollments/my-enrollments?t=${new Date().getTime()}`);
         setEnrollments(response.data.data || []);
         
         // Check for persisted certificate
@@ -88,32 +126,59 @@ const StudentDashboard = () => {
         </Button>
       </header>
 
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <div className="stat-card glass">
           <div className="stat-icon purple">
             <BookOpen size={24} />
           </div>
           <div className="stat-info">
-            <h3>{enrollments.length}</h3>
+            <h3>{personalizedStats.enrolledCount}</h3>
             <p>Courses Enrolled</p>
           </div>
         </div>
         <div className="stat-card glass">
           <div className="stat-icon blue">
-            <Clock size={24} />
+            <TrendingUp size={24} />
           </div>
           <div className="stat-info">
-            <h3>2h</h3>
-            <p>Learning Time</p>
+            <h3>{personalizedStats.learningProgress}%</h3>
+            <p>Avg. Learning Progress</p>
           </div>
         </div>
         <div className="stat-card glass">
-          <div className="stat-icon orange">
+          <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
             <Award size={24} />
           </div>
           <div className="stat-info">
-            <h3>{enrollments.filter(e => e.progress === 100).length}</h3>
-            <p>Certificates</p>
+            <h3>{personalizedStats.completedCourses}</h3>
+            <p>Completed Courses</p>
+          </div>
+        </div>
+        <div className="stat-card glass">
+          <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+            <Clock size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>{personalizedStats.pendingLessons}</h3>
+            <p>Pending Lessons</p>
+          </div>
+        </div>
+        <div className="stat-card glass">
+          <div className="stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+            <Star size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>{personalizedStats.upcomingQuizzes}</h3>
+            <p>Upcoming Quizzes</p>
+          </div>
+        </div>
+        <div className="stat-card glass">
+          <div className="stat-icon" style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24' }}>
+            <Award size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>{personalizedStats.certificatesEarned}</h3>
+            <p>Certificates Earned</p>
           </div>
         </div>
       </div>
@@ -140,9 +205,9 @@ const StudentDashboard = () => {
                       <div className="progress-bar" style={{ width: `${item.progress || 0}%` }}></div>
                     </div>
                     <div className="progress-text">
-                      {item.progress === 100 ? '100% Completed' : `${item.progress || 0}% Complete`}
+                      <span>{item.progress === 100 ? '100% Completed' : `${item.progress || 0}% Complete`}</span>
                       {item.progress === 100 && item.quiz_status === 'passed' && <span className="completed-label" style={{ color: '#10b981' }}><Award size={12} /> Certificate Earned</span>}
-                      {item.progress === 100 && item.quiz_status !== 'passed' && <span className="completed-label" style={{ color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.2)' }}><Award size={12} /> Assessment Required</span>}
+                      {item.progress === 100 && item.quiz_status !== 'passed' && <span className="completed-label" style={{ color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.2)', padding: '2px 6px', borderRadius: '4px' }}><Award size={12} /> Assessment Required</span>}
                     </div>
                   </div>
                 </div>

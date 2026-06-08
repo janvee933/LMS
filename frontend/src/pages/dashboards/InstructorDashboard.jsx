@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   BookOpen, Users, Plus, Star, BarChart, Activity, 
   Search, Bell, ArrowUpRight, ArrowDownRight, RefreshCcw,
-  Clock, Layout, Settings, ExternalLink, Trash2
+  Clock, Layout, Settings, ExternalLink, Trash2, MessageCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
@@ -29,6 +29,7 @@ const InstructorDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('instructorActiveTab') || 'overview');
   const [enrollments, setEnrollments] = useState([]);
+  const [doubts, setDoubts] = useState([]);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,7 +82,7 @@ const InstructorDashboard = () => {
   const fetchEnrollments = async () => {
     try {
       setRefreshing(true);
-      const res = await api.get('/enrollments/instructor/all');
+      const res = await api.get(`/enrollments/instructor/all?t=${new Date().getTime()}`);
       if (res.data.success) {
         setEnrollments(res.data.data || []);
       }
@@ -99,6 +100,10 @@ const InstructorDashboard = () => {
       if (statsRes.data.success) {
         setStats(statsRes.data.stats);
         setMyCourses(statsRes.data.myCourses || []);
+      }
+      const doubtsRes = await api.get('/doubts/instructor');
+      if (doubtsRes.data.success) {
+        setDoubts(doubtsRes.data.data || []);
       }
     } catch (error) {
       console.error('Error fetching instructor dashboard data', error);
@@ -158,7 +163,7 @@ const InstructorDashboard = () => {
         alert('Extra attempt granted successfully');
         await fetchEnrollments();
         if (selectedStudent) {
-          const updatedEnrollments = await api.get('/enrollments/instructor/all');
+          const updatedEnrollments = await api.get(`/enrollments/instructor/all?t=${new Date().getTime()}`);
           const newStudentData = updatedEnrollments.data.data.find(s => s.student_email === selectedStudent.student_email);
           if (newStudentData) setSelectedStudent(newStudentData);
         }
@@ -168,6 +173,17 @@ const InstructorDashboard = () => {
       alert(error.response?.data?.message || 'Failed to grant attempt');
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleUpdateDoubtStatus = async (id, status) => {
+    try {
+      const res = await api.put(`/doubts/${id}/status`, { status });
+      if (res.data.success) {
+        setDoubts(doubts.map(d => d.id === id ? { ...d, status } : d));
+      }
+    } catch (error) {
+      alert('Failed to update doubt status');
     }
   };
 
@@ -212,6 +228,13 @@ const InstructorDashboard = () => {
             <span>Students</span>
           </button>
           <button 
+            className={`nav-item-premium ${activeTab === 'doubts' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('doubts')}
+          >
+            <div className="icon-wrapper"><MessageCircle size={18} /></div>
+            <span>Student Doubts</span>
+          </button>
+          <button 
             className={`nav-item-premium ${activeTab === 'settings' ? 'active' : ''}`} 
             onClick={() => navigate('/settings')}
           >
@@ -235,7 +258,7 @@ const InstructorDashboard = () => {
       <main className="instructor-content-premium">
         <header className="instructor-header-premium">
           <div className="header-title-area">
-            <h1>{activeTab === 'overview' ? 'Monitoring' : activeTab === 'courses' ? 'My Courses' : 'Student Management'}</h1>
+            <h1>{activeTab === 'overview' ? 'Monitoring' : activeTab === 'courses' ? 'My Courses' : activeTab === 'students' ? 'Student Management' : 'Student Doubts'}</h1>
             <p>Welcome back, {user?.name}. Here's your teaching summary.</p>
           </div>
           
@@ -467,6 +490,75 @@ const InstructorDashboard = () => {
                     <tr>
                       <td colSpan="4" style={{ textAlign: 'center', padding: '3rem' }}>
                         No students enrolled in your courses yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'doubts' && (
+          <div className="animate-slide-up">
+            <div className="section-header">
+              <h2>Student Doubts & Questions</h2>
+            </div>
+            
+            <div className="premium-table-container">
+              <table className="premium-table">
+                <thead>
+                  <tr>
+                    <th>Student Details</th>
+                    <th>Course</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {doubts.length > 0 ? doubts.map((d) => (
+                    <tr key={d.id}>
+                      <td>
+                        <div style={{ fontWeight: 600, color: 'white' }}>{d.student_name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{d.student_email}</div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#6366f1', fontSize: '0.875rem' }}>{d.course_title}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(d.created_at).toLocaleDateString()}</div>
+                      </td>
+                      <td style={{ maxWidth: '300px' }}>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>{d.message}</div>
+                      </td>
+                      <td>
+                        <span className={`status-badge ${d.status === 'open' ? 'pending' : 'online'}`} style={{ textTransform: 'capitalize' }}>
+                          {d.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {d.status !== 'answered' && (
+                            <Button variant="primary" size="sm" onClick={() => handleUpdateDoubtStatus(d.id, 'answered')}>
+                              Mark Answered
+                            </Button>
+                          )}
+                          {d.status !== 'closed' && (
+                            <Button variant="outline" size="sm" onClick={() => handleUpdateDoubtStatus(d.id, 'closed')}>
+                              Close
+                            </Button>
+                          )}
+                          {d.status !== 'open' && (
+                            <Button variant="secondary" size="sm" onClick={() => handleUpdateDoubtStatus(d.id, 'open')}>
+                              Reopen
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '3rem' }}>
+                        No doubts asked by students yet.
                       </td>
                     </tr>
                   )}

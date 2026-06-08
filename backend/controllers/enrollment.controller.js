@@ -29,6 +29,7 @@ const enrollCourse = async (req, res) => {
 const getMyEnrollments = async (req, res) => {
   try {
     const enrollments = await Enrollment.getByUser(req.user.id);
+    console.log("SENDING MY ENROLLMENTS:", JSON.stringify(enrollments, null, 2));
     res.status(200).json({ success: true, data: enrollments });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

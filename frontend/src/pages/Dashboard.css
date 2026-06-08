@@ -181,6 +181,7 @@
   gap: 12px;
   padding-top: 16px;
   border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
 }
 
 .resume-btn, .certificate-btn {

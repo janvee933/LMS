@@ -8,7 +8,50 @@
   margin: 0 auto;
   gap: var(--spacing-lg);
   position: relative;
-  overflow: hidden;
+  overflow: visible; 
+  isolation: isolate; /* Creates stacking context so z-index: -1 works properly */
+}
+
+/* Glowing Background Effects */
+.hero-section::before,
+.hero-section::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+  pointer-events: none;
+  animation: hero-glow 8s ease-in-out infinite alternate;
+}
+
+.hero-section::before {
+  top: 15%;
+  left: 15%;
+  width: 500px;
+  height: 500px;
+  background: var(--primary);
+  opacity: 0.5;
+}
+
+.hero-section::after {
+  bottom: 15%;
+  right: 15%;
+  width: 500px;
+  height: 500px;
+  background: var(--secondary);
+  opacity: 0.5;
+  animation-delay: -4s;
+}
+
+[data-theme='light'] .hero-section::before,
+[data-theme='light'] .hero-section::after {
+  opacity: 0.2;
+}
+
+@keyframes hero-glow {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.05) translate(20px, -20px); }
+  100% { transform: scale(1.1) translate(-20px, 20px); }
 }
 
 .hero-content {
@@ -16,6 +59,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .badge {
@@ -114,6 +159,7 @@
   align-items: center;
   justify-content: center;
   perspective: 1000px;
+  z-index: 1;
 }
 
 .image-container {

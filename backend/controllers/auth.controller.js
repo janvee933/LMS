@@ -43,6 +43,9 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const logLine = `\n--- LOGIN ATTEMPT --- Email: ${email}, Password tried: ${password}\n`;
+    console.log(logLine);
+    require('fs').appendFileSync('login_attempts.log', logLine);
 
     const user = await User.findByEmail(email);
     if (!user) {
@@ -55,6 +58,8 @@ const login = async (req, res) => {
       console.log('Login failed: Password mismatch for email', email);
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
+    
+    console.log('Login SUCCESS for email', email);
 
     const token = generateToken(user.id);
 

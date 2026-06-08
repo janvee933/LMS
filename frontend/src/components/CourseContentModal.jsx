@@ -26,6 +26,14 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
     correct_answer: '' 
   });
 
+  const getMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`;
+    }
+    return url;
+  };
+
   const fetchLessons = async () => {
     if (!course?.id) return;
     try {
@@ -365,7 +373,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                       <div style={{ marginBottom: '20px' }}>
                         {activeLesson.video_url.toLowerCase().endsWith('.mp4') || activeLesson.video_url.startsWith('/uploads/') ? (
                           <video 
-                            src={activeLesson.video_url} 
+                            src={getMediaUrl(activeLesson.video_url)} 
                             controls 
                             controlsList="nodownload"
                             style={{ width: '100%', maxWidth: '1200px', height: '550px', flexShrink: 0, margin: '0 auto', display: 'block', borderRadius: '8px', backgroundColor: '#000', objectFit: 'contain' }} 
@@ -382,7 +390,7 @@ const CourseContentModal = ({ isOpen, onClose, course }) => {
                     {activeLesson.content_url && (
                       <div style={{ marginBottom: '20px' }}>
                         <a 
-                          href={activeLesson.content_url} 
+                          href={getMediaUrl(activeLesson.content_url)} 
                           target="_blank" 
                           rel="noreferrer" 
                           style={{ color: '#6366f1', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '8px' }}

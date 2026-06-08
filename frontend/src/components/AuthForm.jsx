@@ -60,9 +60,9 @@ const AuthForm = ({ type = 'login' }) => {
     }
     setLoading(false);
   };
-
   return (
-    <div className="auth-container glass animate-fade-in">
+    <div className="auth-wrapper">
+      <div className="auth-container glass animate-fade-in">
       <div className="auth-header">
         <h2 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
         <p className="auth-subtitle">
@@ -178,6 +178,7 @@ const AuthForm = ({ type = 'login' }) => {
             {isLogin ? 'Sign up' : 'Login'}
           </button>
         </p>
+      </div>
       </div>
     </div>
   );
