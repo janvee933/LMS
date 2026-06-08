@@ -77,26 +77,6 @@ const AuthForm = ({ type = 'login' }) => {
         </div>
       )}
 
-      {/* Role Selector during Signup */}
-      {!isLogin && (
-        <div className="role-selector">
-          <button 
-            type="button"
-            className={`role-btn ${formData.role === 'student' ? 'active' : ''}`}
-            onClick={() => handleRoleChange('student')}
-          >
-            I'm a Student
-          </button>
-          <button 
-            type="button"
-            className={`role-btn ${formData.role === 'instructor' ? 'active' : ''}`}
-            onClick={() => handleRoleChange('instructor')}
-          >
-            I'm an Instructor
-          </button>
-        </div>
-      )}
-
       <form className="auth-form" onSubmit={handleSubmit}>
         {!isLogin && (
           <div className="input-group">
